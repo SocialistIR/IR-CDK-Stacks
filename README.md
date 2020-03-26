@@ -1,6 +1,13 @@
 
 # IR-CDK-Stacks
 
+## Requirements
+
+- Python3.7
+- AWS CLI
+
+##  Getting started
+
 The `cdk.json` file tells the CDK Toolkit how to execute your app.
 
 This project is set up like a standard Python project.  The initialization
@@ -44,6 +51,30 @@ $ cdk synth
 To add additional dependencies, for example other CDK libraries, just add
 them to your `setup.py` file and rerun the `pip install -r requirements.txt`
 command.
+
+## Deployment
+
+Configure your AWS account using the AWS CLI.
+
+Note: You need to setup the correct region to deploy your stacks to.
+
+```
+$ aws configure
+```
+
+Deploy the stacks.
+
+```
+$ cdk deploy
+```
+
+## Clean up
+
+Destroy the app's resources to avoid incurring any costs from the resources created.
+
+```
+$ cdk destroy
+```
 
 ## Useful commands
 

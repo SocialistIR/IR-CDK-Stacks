@@ -4,7 +4,7 @@ class InAur01DetectionStack(core.Stack):
 
     METRIC_NAMESPACE = "LogMetrics"
     METRIC_NAME = "InAur01DetectionFailedDbLoginAttempts"
-    NOTIFY_EMAIL = ""
+    NOTIFY_EMAIL = "z5161477@unsw.edu.au"
 
     def __init__(self, scope: core.Construct, id: str, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
@@ -20,7 +20,7 @@ class InAur01DetectionStack(core.Stack):
 
         # Apply metric filter
         # Filter all metrics of failed login attempts in log
-        metric_filter = logs.MetricFilter(self, "MetricFilter",
+        metric_filter = logs.MetricFilter(self, "InAur01DetectionMetricFilter",
             log_group=log_group,
             metric_namespace=self.METRIC_NAMESPACE,
             metric_name=self.METRIC_NAME,
