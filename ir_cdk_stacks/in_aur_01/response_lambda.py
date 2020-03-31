@@ -30,7 +30,7 @@ def lambda_handler(event, context):
     print(sources)
     
     # Send data to slack channel
-    webhook_url = 'https://hooks.slack.com/services/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'
+    webhook_url = ''
     slack_message = {
         'channel': 'ir-cdk-stacks',
         'text': ''.join([source + "\n" for source in sources])

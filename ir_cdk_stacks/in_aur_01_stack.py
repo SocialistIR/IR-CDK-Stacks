@@ -16,7 +16,7 @@ class InAur01Stack(core.Stack):
 
     METRIC_NAMESPACE = "LogMetrics"
     METRIC_NAME = "InAur01DetectionFailedDbLoginAttempts"
-    NOTIFY_EMAIL = "z5161477@unsw.edu.au"
+    NOTIFY_EMAIL = ""
 
     def __init__(self, scope: core.Construct, id: str, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
