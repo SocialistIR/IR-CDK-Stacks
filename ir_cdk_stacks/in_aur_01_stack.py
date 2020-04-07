@@ -13,13 +13,13 @@ import os
 
 
 class InAur01Stack(core.Stack):
-
-    METRIC_NAMESPACE = "LogMetrics"
-    METRIC_NAME = "InAur01DetectionFailedDbLoginAttempts"
-    NOTIFY_EMAIL = ""
-
     def __init__(self, scope: core.Construct, id: str, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
+
+        METRIC_NAMESPACE = "LogMetrics"
+        METRIC_NAME = "InAur01DetectionFailedDbLoginAttempts"
+        NOTIFY_EMAIL = self.node.try_get_context("notify_email")
+        SLACK_WEBHOOK_URL = self.node.try_get_context("webhook_url")
 
         # Get the log group of our postgres instance
         log_group = logs.LogGroup.from_log_group_name(
@@ -27,9 +27,7 @@ class InAur01Stack(core.Stack):
         )
 
         # Create new metric
-        metric = cloudwatch.Metric(
-            namespace=self.METRIC_NAMESPACE, metric_name=self.METRIC_NAME
-        )
+        metric = cloudwatch.Metric(namespace=METRIC_NAMESPACE, metric_name=METRIC_NAME)
 
         # Apply metric filter
         # Filter all metrics of failed login attempts in log
@@ -40,8 +38,8 @@ class InAur01Stack(core.Stack):
             self,
             "InAur01DetectionMetricFilter",
             log_group=log_group,
-            metric_namespace=self.METRIC_NAMESPACE,
-            metric_name=self.METRIC_NAME,
+            metric_namespace=METRIC_NAMESPACE,
+            metric_name=METRIC_NAME,
             filter_pattern=filter_pattern,
             metric_value="1",
         )
@@ -50,7 +48,7 @@ class InAur01Stack(core.Stack):
         topic = sns.Topic(self, "InAur01DetectionTopic")
 
         # Add email subscription
-        topic.add_subscription(subs.EmailSubscription(self.NOTIFY_EMAIL))
+        topic.add_subscription(subs.EmailSubscription(NOTIFY_EMAIL))
 
         # Create new alarm for metric
         # Alarm will trigger if there is >= 10 failed login attempts
@@ -77,6 +75,7 @@ class InAur01Stack(core.Stack):
             runtime=_lambda.Runtime.PYTHON_3_8,
             handler="response_lambda.lambda_handler",
             code=_lambda.Code.from_asset(dir_path),
+            environment={"webhook_url": SLACK_WEBHOOK_URL},
         )
         # AWS CDK has a bug where it would not add the correct permission
         # to the lambda for Cloudwatch log subscription to invoke it.
@@ -85,11 +84,13 @@ class InAur01Stack(core.Stack):
             "InAur01ResponseFunctionInvokePermission",
             principal=iam.ServicePrincipal("logs.amazonaws.com"),
             action="lambda:InvokeFunction",
-            source_arn=log_group.log_group_arn + ":*"
+            source_arn=log_group.log_group_arn + ":*",
         )
 
         # Set source for lambda trigger
         lambda_destination = logs_destinations.LambdaDestination(lambda_func)
-        log_group.add_subscription_filter("InAur01ResponseSubscriptionFilter",
-            destination=lambda_destination, filter_pattern=filter_pattern
+        log_group.add_subscription_filter(
+            "InAur01ResponseSubscriptionFilter",
+            destination=lambda_destination,
+            filter_pattern=filter_pattern,
         )
