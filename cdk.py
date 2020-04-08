@@ -1,71 +1,125 @@
-from __future__ import print_function, unicode_literals
+import click
+import os
+import sys
 from PyInquirer import prompt
 from pprint import pprint
-import click
-import subprocess
+from utils.validators import (
+    AwsAccountIdValidator,
+    AwsRegionValidator,
+)
+import socialist_ir.in_aur_01_stack
+from socialist_ir.config import Config
 
-from utils.helpers import is_valid_email, is_valid_webhook_url
 
-def in_aur_01_stack():
-    # Prompt required variables
-    questions = [
-        {
-            "type": "input",
-            "name": "notify_email",
-            "message": "Please enter your notification email",
-        },
-        {
-            "type": "input",
-            "name": "webhook_url",
-            "message": "Please enter your Slack Webhook URL",
-        },
-    ]
-    answers = prompt(questions)
+class SocialistIr:
+    def __init__(self):
+        self.config = Config.get_config()
 
-    if answers and answers["notify_email"] and answers["webhook_url"]:
-        notify_email = answers["notify_email"]
-        webhook_url = answers["webhook_url"]
-        if not is_valid_email(notify_email):
-            raise ValueError("You must enter a valid email.")
-        if not is_valid_webhook_url(webhook_url):
-            raise ValueError("You must enter a valid Slack Webhook URL.")
-        subprocess.run(
-            [
-                "cdk",
-                "synth",
-                "in-aur-01-stack",
-                "-c",
-                f"notify_email={notify_email}",
-                "-c",
-                f"webhook_url={webhook_url}",
+    def init_config(self):
+        if "main" not in self.config:
+            self.config.add_section("main")
+
+    def environment_setup(self):
+        # Prompt required variables
+        questions = [
+            {
+                "type": "input",
+                "name": "account",
+                "message": "Please enter your AWS Account ID",
+                "validate": AwsAccountIdValidator,
+            },
+            {
+                "type": "input",
+                "name": "region",
+                "message": "Please enter the region you want to deploy your IR stack to",
+                "validate": AwsRegionValidator,
+            },
+        ]
+
+        answers = prompt(questions)
+
+        # Save variables to config
+        if answers and answers["account"] and answers["region"]:
+            self.config.set("main", "account", answers["account"])
+            self.config.set("main", "region", answers["region"])
+            Config.save_config(self.config)
+
+    def list_ir_stacks(self):
+        while True:
+            questions = [
+                {
+                    "type": "list",
+                    "name": "ir",
+                    "message": "Which IR stack do you want to deploy?",
+                    "choices": [
+                        "IN-S3-01",
+                        "IN-AUR-01",
+                        "IN-AUR-02",
+                        "IN-AUR-03",
+                        "IN-API-01",
+                        "IN-API-02",
+                        "IN-LAM-01",
+                        "IN-CLW-01",
+                        "IN-CLT-01",
+                        "IN-IAM-01",
+                        "Back",
+                    ],
+                }
             ]
-        )
+
+            answers = prompt(questions)
+
+            # Process answers
+            if answers and answers["ir"]:
+                stack = None
+                if answers["ir"] == "IN-AUR-01":
+                    stack = socialist_ir.in_aur_01_stack.InAur01Stack(
+                        name="in-aur-01-stack",
+                        required_variables=["notify_email", "webhook_url"],
+                    )
+                if answers["ir"] == "Back":
+                    return
+                if stack:
+                    stack.run()
+
+    def run(self):
+        # Initialize config file
+        self.init_config()
+
+        # Check main variables
+        if "account" not in self.config["main"] or "region" not in self.config["main"]:
+            print(
+                "Required environment variables were not configured, running setup..."
+            )
+            self.environment_setup()
+
+        # Prompt main
+        while True:
+            questions = [
+                {
+                    "type": "list",
+                    "name": "main",
+                    "message": "Welcome to SocialistIR!",
+                    "choices": ["Run environment setup", "Deploy IR stacks", "Exit",],
+                }
+            ]
+
+            answers = prompt(questions)
+
+            # Process answers
+            if answers and answers["main"]:
+                if answers["main"] == "Run environment setup":
+                    self.environment_setup()
+                elif answers["main"] == "Deploy IR stacks":
+                    self.list_ir_stacks()
+                elif answers["main"] == "Exit":
+                    sys.exit(0)
 
 
-def process_ir(ir_answers):
-    if ir_answers["ir"] == "IN-AUR-01":
-        in_aur_01_stack()
+def main():
+    ir = SocialistIr()
+    ir.run()
 
 
-questions = [
-    {
-        "type": "list",
-        "name": "ir",
-        "message": "Which IR stack do you want to deploy?",
-        "choices": [
-            "IN-S3-01",
-            "IN-AUR-01",
-            "IN-AUR-02",
-            "IN-AUR-03",
-            "IN-API-01",
-            "IN-API-02",
-            "IN-LAM-01",
-            "IN-CLW-01",
-            "IN-CLT-01",
-            "IN-IAM-01",
-        ],
-    }
-]
-
-answers = prompt(questions)
-process_ir(answers)
+if __name__ == "__main__":
+    main()
