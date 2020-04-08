@@ -61,13 +61,14 @@ def lambda_handler(event, context):
 
     # Put source IP to blacklist in WAF
     blacklist = waf.get_ip_set(
-        Name="IN-AUR-01", Scope="REGIONAL", Id="c000fa68-b1c2-427b-9ba9-0d5e5b9d89fd"
+        Name=os.environ["waf_name"],
+        Scope=os.environ["waf_scope"],
+        Id=os.environ["waf_id"],
     )
     ipset = set(blacklist["IPSet"]["Addresses"])
     for source in attack_sources:
-        source_ip_raw = source.split("-")[:4]
-        if source_ip_raw:
-            source_ip = ".".join(source_ip_raw)
+        source_ip = source.split("(")
+        if source_ip:
             ipset.add(source_ip + "/32")
     new_ips = ipset.difference(set(blacklist["IPSet"]["Addresses"]))
 
@@ -75,7 +76,7 @@ def lambda_handler(event, context):
     if len(new_ips) > 0:
         response = waf.update_ip_set(
             Name=blacklist["IPSet"]["Name"],
-            Scope="REGIONAL",
+            Scope=os.environ["waf_scope"],
             Id=blacklist["IPSet"]["Id"],
             Addresses=list(ipset),
             LockToken=blacklist["LockToken"],
@@ -83,8 +84,7 @@ def lambda_handler(event, context):
 
         jips = {"ips": list(new_ips)}
         response = sfn.start_execution(
-            stateMachineArn="arn:aws:states:us-east-1:544820149332:stateMachine:Waitstate",
-            input=json.dumps(jips),
+            stateMachineArn=os.environ["unban_sm_arn"], input=json.dumps(jips),
         )
 
     return {"statusCode": 200, "body": slack_message}

@@ -29,6 +29,10 @@ class CdkStack:
             command.append(f"{var}={self.config.get(self.name, var)}")
         subprocess.run(command)
 
+    def list_required_variables(self):
+        for var in self.required_variables:
+            print(f"{var}: {self.config.get(self.name, var)}")
+
     def deploy(self):
         self.aws_cdk_cli("deploy")
 
@@ -48,6 +52,7 @@ class CdkStack:
                     "message": "Choose your action:",
                     "choices": [
                         "Run setup",
+                        "List config variables",
                         "Deploy stack",
                         "Synthesize stack",
                         "Destroy stack",
@@ -58,6 +63,8 @@ class CdkStack:
             answers = prompt(questions)
             if answers[self.name] == "Run setup":
                 self.setup()
+            elif answers[self.name] == "List config variables":
+                self.list_required_variables()
             elif answers[self.name] == "Deploy stack":
                 self.deploy()
             elif answers[self.name] == "Synthesize stack":

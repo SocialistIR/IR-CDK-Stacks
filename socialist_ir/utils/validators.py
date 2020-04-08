@@ -2,6 +2,24 @@ import regex
 from PyInquirer import Validator, ValidationError
 
 
+class AwsAuroraClusterNameValidator(Validator):
+    def validate(self, document):
+        # Regular expression for validating an AWS Aurora Cluster name
+        # Constraints:
+        # Can only contain letters, numbers and hyphens
+        # 1 to 60 alphanumeric characters or hyphens.
+        # First character must be a letter.
+        # Can't contain two consecutive hyphens.
+        # Can't end with a hyphen.
+        cluster_name_regex = "(?!.*(--).*)^[a-zA-Z][a-zA-Z0-9\-]{0,59}(?<!-)$"
+        ok = regex.match(cluster_name_regex, document.text)
+        if not ok:
+            raise ValidationError(
+                message="Please enter a valid Aurora Cluster name",
+                cursor_position=len(document.text),
+            )
+
+
 class EmailValidator(Validator):
     def validate(self, document):
         # Regular expression for validating an Email format
