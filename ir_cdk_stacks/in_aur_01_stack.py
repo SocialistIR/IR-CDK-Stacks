@@ -176,4 +176,4 @@ class InAur01Stack(core.Stack):
                 filter_pattern=filter_pattern,
             )
         except Exception:
-            logging.error("Variables for IN-AUR-01 were not provided!")
+            logging.error(f"Required variables for {id} were not provided!")
