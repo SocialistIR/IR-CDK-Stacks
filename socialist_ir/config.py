@@ -11,7 +11,7 @@ class Config:
         if os.path.isfile(cls.CONFIG_FILE):
             config.read(cls.CONFIG_FILE)
         else:
-            cls.save_config()
+            cls.save_config(config)
         return config
 
     @classmethod
