@@ -3,7 +3,7 @@
 
 ## Requirements
 
-- Python3.7
+- Python 3.7
 - AWS CLI
 
 ##  Getting started
