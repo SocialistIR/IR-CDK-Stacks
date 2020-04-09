@@ -52,6 +52,12 @@ To add additional dependencies, for example other CDK libraries, just add
 them to your `setup.py` file and rerun the `pip install -r requirements.txt`
 command.
 
+## IR CLI usage
+
+```
+python cdk.py
+```
+
 ## Deployment
 
 Configure your AWS account using the AWS CLI.
