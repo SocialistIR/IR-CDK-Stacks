@@ -1,5 +1,5 @@
 from PyInquirer import prompt
-from socialist_ir.cdk_stack import CdkStack
+from socialist_ir.cdk_menu import CdkMenu
 from socialist_ir.utils.validators import (
     EmailValidator,
     SlackWebhookValidator,
@@ -8,7 +8,7 @@ from socialist_ir.utils.validators import (
 from socialist_ir.config import Config
 
 
-class InAur01Stack(CdkStack):
+class InAur01Stack(CdkMenu):
     def __init__(
         self,
         name="in-aur-01-stack",

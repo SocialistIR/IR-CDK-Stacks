@@ -3,7 +3,7 @@ from PyInquirer import prompt
 from socialist_ir.config import Config
 
 
-class CdkStack:
+class CdkMenu:
     def __init__(self, name: str, required_variables: list):
         if not name:
             raise ValueError("'name' argument is required")
