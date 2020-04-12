@@ -6,7 +6,7 @@ class Config:
     CONFIG_FILE = "config.ini"
 
     @classmethod
-    def get_config(cls):
+    def get_config(cls) -> ConfigParser:
         config = ConfigParser()
         if os.path.isfile(cls.CONFIG_FILE):
             config.read(cls.CONFIG_FILE)
@@ -15,6 +15,6 @@ class Config:
         return config
 
     @classmethod
-    def save_config(cls, config):
+    def save_config(cls, config: ConfigParser) -> None:
         with open(cls.CONFIG_FILE, "w") as f:
             config.write(f)

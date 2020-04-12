@@ -8,7 +8,10 @@ from socialist_ir.config import Config
 
 config = Config.get_config()
 
-env_US = core.Environment(account=config.get("main", "account"), region=config.get("main", "region"))
+ACCOUNT = config.get("main", "account")
+REGION = config.get("main", "region")
+
+env_US = core.Environment(account=ACCOUNT, region=REGION)
 
 app = core.App()
 IrCdkStacksStack(app, "ir-cdk-stacks", env=env_US)
