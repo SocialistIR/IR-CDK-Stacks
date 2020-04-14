@@ -5,8 +5,8 @@ from aws_cdk import (
     aws_sns as sns,
     aws_logs as logs,
     aws_sns_subscriptions as subs,
-    aws_logs_destinations as logs_destinations,
     aws_lambda as _lambda,
+    aws_lambda_event_sources as lambda_event_sources,
     aws_iam as iam,
     aws_wafv2 as wafv2,
     aws_stepfunctions as sfn,
@@ -15,16 +15,20 @@ from aws_cdk import (
 import os
 import logging
 
+logger = logging.getLogger(__name__)
+
 
 class InAur01Stack(core.Stack):
     def __init__(self, scope: core.Construct, id: str, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
 
-        try:
-            CLUSTER_NAME = self.node.try_get_context("cluster_name")
-            NOTIFY_EMAIL = self.node.try_get_context("notify_email")
-            SLACK_WEBHOOK_URL = self.node.try_get_context("webhook_url")
+        CLUSTER_NAME = self.node.try_get_context("cluster_name")
+        NOTIFY_EMAIL = self.node.try_get_context("notify_email")
+        SLACK_WEBHOOK_URL = self.node.try_get_context("webhook_url")
 
+        if not CLUSTER_NAME or not NOTIFY_EMAIL or not SLACK_WEBHOOK_URL:
+            logger.error(f"Required context variables for {id} were not provided!")
+        else:
             # Get the log group of our postgres instance
             log_group = logs.LogGroup.from_log_group_name(
                 self,
@@ -34,22 +38,8 @@ class InAur01Stack(core.Stack):
 
             # Create new metric
             metric = cloudwatch.Metric(
-                namespace="LogMetrics", metric_name="InAur01DetectionFailedDbLoginAttempts"
-            )
-
-            # Apply metric filter
-            # Filter all metrics of failed login attempts in log
-            filter_pattern = logs.FilterPattern.all_terms(
-                "FATAL:  password authentication failed for user"
-            )
-            metric_filter = logs.MetricFilter(
-                self,
-                "InAur01DetectionMetricFilter",
-                log_group=log_group,
-                metric_namespace=metric.namespace,
-                metric_name=metric.metric_name,
-                filter_pattern=filter_pattern,
-                metric_value="1",
+                namespace="LogMetrics",
+                metric_name="InAur01DetectionFailedDbLoginAttempts",
             )
 
             # Create new SNS topic
@@ -107,6 +97,14 @@ class InAur01Stack(core.Stack):
                     resources=[waf.attr_arn],
                 )
             )
+            # Assign EC2 permissions to lambda
+            unban_lambda.add_to_role_policy(
+                iam.PolicyStatement(
+                    actions=["ec2:DeleteNetworkAclEntry"],
+                    effect=iam.Effect.ALLOW,
+                    resources=["*"],
+                )
+            )
 
             # Create stepfunction
             # Define a second state machine to unban the blacklisted IP after 1 hour
@@ -144,6 +142,7 @@ class InAur01Stack(core.Stack):
                     "waf_id": waf.attr_id,
                     "waf_scope": waf.scope,
                     "unban_sm_arn": statemachine.state_machine_arn,
+                    "cluster_name": CLUSTER_NAME,
                 },
             )
             # AWS CDK has a bug where it would not add the correct permission
@@ -167,13 +166,37 @@ class InAur01Stack(core.Stack):
                     resources=[waf.attr_arn, statemachine.state_machine_arn],
                 )
             )
-
-            # Set source for lambda trigger
-            lambda_destination = logs_destinations.LambdaDestination(lambda_func)
-            log_group.add_subscription_filter(
-                "InAur01ResponseSubscriptionFilter",
-                destination=lambda_destination,
-                filter_pattern=filter_pattern,
+            # Assign RDS Read-only permissions to lambda
+            lambda_func.add_to_role_policy(
+                iam.PolicyStatement(
+                    actions=["rds:Describe*"], effect=iam.Effect.ALLOW, resources=["*"],
+                )
             )
-        except Exception:
-            logging.error(f"Required context variables for {id} were not provided!")
+            # Assign EC2 permissions to lambda
+            lambda_func.add_to_role_policy(
+                iam.PolicyStatement(
+                    actions=[
+                        "ec2:Describe*",
+                        "ec2:CreateNetworkAclEntry",
+                        "ec2:DeleteNetworkAclEntry",
+                    ],
+                    effect=iam.Effect.ALLOW,
+                    resources=["*"],
+                )
+            )
+            # Assign CloudWatch logs permissions to lambda
+            lambda_func.add_to_role_policy(
+                iam.PolicyStatement(
+                    actions=[
+                        "cloudwatch:Get*",
+                        "cloudwatch:Describe*",
+                        "logs:FilterLogEvents",
+                        "logs:DescribeMetricFilters",
+                    ],
+                    effect=iam.Effect.ALLOW,
+                    resources=["*"],
+                )
+            )
+
+            sns_event_source = lambda_event_sources.SnsEventSource(topic)
+            lambda_func.add_event_source(sns_event_source)

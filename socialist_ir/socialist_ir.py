@@ -1,10 +1,6 @@
-import os
 import sys
 from PyInquirer import prompt
-from socialist_ir.utils.validators import (
-    AwsAccountIdValidator,
-    AwsRegionValidator,
-)
+from socialist_ir.utils.validators import AwsAccountIdValidator
 from socialist_ir.in_aur_01_stack import InAur01Stack
 from socialist_ir.config import Config
 from socialist_ir.cdk_menu import CdkMenu
@@ -12,11 +8,11 @@ from socialist_ir.cdk_menu import CdkMenu
 
 class SocialistIr(CdkMenu):
     def __init__(
-        self, name="main", required_variables=["account", "region"],
+        self, name: str = "main", required_variables: list = ["account", "region"],
     ):
         super().__init__(name=name, required_variables=required_variables)
 
-    def setup(self):
+    def setup(self) -> None:
         # Prompt required variables
         questions = [
             {
@@ -26,10 +22,30 @@ class SocialistIr(CdkMenu):
                 "validate": AwsAccountIdValidator,
             },
             {
-                "type": "input",
+                "type": "list",
                 "name": "region",
                 "message": "Please enter the region you want to deploy your IR stack to",
-                "validate": AwsRegionValidator,
+                "choices": [
+                    "us-east-2",
+                    "us-east-1",
+                    "us-west-1",
+                    "us-west-2",
+                    "ap-east-1",
+                    "ap-south-1",
+                    "ap-northeast-3",
+                    "ap-northeast-2",
+                    "ap-southeast-1",
+                    "ap-southeast-2",
+                    "ap-northeast-1",
+                    "ca-central-1",
+                    "eu-central-1",
+                    "eu-west-1",
+                    "eu-west-2",
+                    "eu-west-3",
+                    "eu-north-1",
+                    "me-south-1",
+                    "sa-east-1",
+                ],
             },
         ]
 
@@ -41,7 +57,7 @@ class SocialistIr(CdkMenu):
             self.config.set(self.name, "region", answers["region"])
             Config.save_config(self.config)
 
-    def list_internal_stacks(self):
+    def list_internal_stacks(self) -> None:
         while True:
             questions = [
                 {
@@ -101,7 +117,7 @@ class SocialistIr(CdkMenu):
                 if stack:
                     stack.run()
 
-    def list_external_stacks(self):
+    def list_external_stacks(self) -> None:
         while True:
             questions = [
                 {
@@ -142,7 +158,7 @@ class SocialistIr(CdkMenu):
                 if stack:
                     stack.run()
 
-    def list_ir_stacks(self):
+    def list_ir_stacks(self) -> None:
         while True:
             questions = [
                 {
@@ -167,7 +183,7 @@ class SocialistIr(CdkMenu):
                 if stack:
                     stack.run()
 
-    def run(self):
+    def run(self) -> None:
         # Check required variables
         self.check_required_variables()
 

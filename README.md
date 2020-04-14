@@ -36,10 +36,33 @@ If you are a Windows platform, you would activate the virtualenv like this:
 % .env\Scripts\activate.bat
 ```
 
+
+## Install dependencies
+
 Once the virtualenv is activated, you can install the required dependencies.
 
 ```
 $ pip install -r requirements.txt
+```
+
+Additionally, you will need to install other dependencies manually in order for the CLI to work.
+
+### AWS CLI v2
+
+```
+$ curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && unzip awscliv2.zip && sudo ./aws/install
+```
+
+### AWS CDK
+
+```
+$ curl -sL https://deb.nodesource.com/setup_13.x | sudo -E bash - && sudo apt-get install -y nodejs && npm install -g aws-cdk
+```
+
+### Other testing dependencies
+
+```
+$ sudo apt-get install postgresql libpq-dev postgresql-client postgresql-client-common pgdb
 ```
 
 At this point you can now synthesize the CloudFormation template for this code.
@@ -72,6 +95,22 @@ Deploy the stacks.
 
 ```
 $ cdk deploy
+```
+
+## Testing
+
+Unit tests are located in `/tests` directory.
+
+```
+$ pytest
+```
+
+## Linting
+
+It is good to have clean code.
+
+```
+$ flake8 .
 ```
 
 ## Clean up

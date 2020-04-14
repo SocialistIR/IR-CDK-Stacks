@@ -53,17 +53,25 @@ black==19.10b0
 cattrs==1.0.0
 click==7.1.1
 constructs==2.0.1
+entrypoints==0.3
+flake8==3.7.9
+flake8-annotations==2.1.0
 importlib-metadata==1.6.0
 -e .
 jsii==1.1.0
+mccabe==0.6.1
 more-itertools==8.2.0
 packaging==20.3
 pathspec==0.7.0
 pluggy==0.13.1
 pprint==0.1
 prompt-toolkit==1.0.14
+psycopg2==2.8.5
+psycopg2-binary==2.8.5
 publication==0.0.3
 py==1.8.1
+pycodestyle==2.5.0
+pyflakes==2.1.1
 Pygments==2.6.1
 PyInquirer==1.0.3
 pyparsing==2.4.7
