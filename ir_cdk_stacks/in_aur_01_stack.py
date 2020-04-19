@@ -46,7 +46,7 @@ class InAur01Stack(core.Stack):
             # Filter all metrics of failed login attempts in log
             metric_filter = logs.MetricFilter(
                 self,
-                "MetricFilter",
+                "InAur01DetectionMetricFilter",
                 log_group=log_group,
                 metric_namespace=metric.namespace,
                 metric_name=metric.metric_name,
