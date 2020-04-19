@@ -24,6 +24,7 @@ aws-cdk.aws-events==1.32.0
 aws-cdk.aws-glue==1.32.0
 aws-cdk.aws-iam==1.32.0
 aws-cdk.aws-kinesis==1.32.0
+aws-cdk.aws-kinesisfirehose==1.32.0
 aws-cdk.aws-kms==1.32.0
 aws-cdk.aws-lambda==1.32.0
 aws-cdk.aws-lambda-event-sources==1.32.0
@@ -50,6 +51,7 @@ aws-cdk.custom-resources==1.32.0
 aws-cdk.cx-api==1.32.0
 aws-cdk.region-info==1.32.0
 black==19.10b0
+boto3==1.12.41
 cattrs==1.0.0
 click==7.1.1
 constructs==2.0.1
