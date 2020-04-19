@@ -42,6 +42,20 @@ class InAur01Stack(core.Stack):
                 metric_name="InAur01DetectionFailedDbLoginAttempts",
             )
 
+            # Apply metric filter
+            # Filter all metrics of failed login attempts in log
+            metric_filter = logs.MetricFilter(
+                self,
+                "MetricFilter",
+                log_group=log_group,
+                metric_namespace=metric.namespace,
+                metric_name=metric.metric_name,
+                filter_pattern=logs.FilterPattern.all_terms(
+                    "FATAL:  password authentication failed for user"
+                ),
+                metric_value="1",
+            )
+
             # Create new SNS topic
             topic = sns.Topic(self, "InAur01DetectionTopic")
 
