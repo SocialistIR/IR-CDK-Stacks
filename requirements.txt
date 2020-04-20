@@ -21,6 +21,7 @@ aws-cdk.aws-ecs==1.32.0
 aws-cdk.aws-elasticloadbalancing==1.32.0
 aws-cdk.aws-elasticloadbalancingv2==1.32.0
 aws-cdk.aws-events==1.32.0
+aws-cdk.aws-events-targets==1.32.0
 aws-cdk.aws-glue==1.32.0
 aws-cdk.aws-iam==1.32.0
 aws-cdk.aws-kinesis==1.32.0
