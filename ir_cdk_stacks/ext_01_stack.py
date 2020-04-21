@@ -347,6 +347,12 @@ class Ext01Stack(core.Stack):
                 },
             )
 
+            kinesis_log = s3.Bucket(
+                self, 
+                id='waf_logs',
+                access_control=s3.BucketAccessControl.PUBLIC_READ_WRITE,
+            ) 
+
             # Assign permissions to response lambda
             lambda_func.add_to_role_policy(
                 iam.PolicyStatement(
@@ -354,19 +360,40 @@ class Ext01Stack(core.Stack):
                         "wafv2:GetIPSet",
                         "wafv2:UpdateIPSet",
                         "states:StartExecution",
+                        "s3:GetObject",
                     ],
                     effect=iam.Effect.ALLOW,
-                    resources=[blacklist.attr_arn, statemachine.state_machine_arn],
+                    resources=[blacklist.attr_arn, statemachine.state_machine_arn, kinesis_log.bucket_arn, kinesis_log.bucket_arn, kinesis_log.bucket_arn + "/*"],
                 )
             )
 
-            kinesis_log = s3.Bucket(self, id='waf_logs') 
             #Create an IAM role for the steram
             stream_role = iam.Role(
                 self,
                 id="waf-kinesis-log-role",
                 assumed_by= iam.ServicePrincipal(service="firehose.amazonaws.com",),
             )
+
+            stream_permissions = iam.Policy(
+                self,
+                id= "Ext-01-kinesis-permissions",
+                statements= [
+                    iam.PolicyStatement(
+                        actions=[
+                        "s3:AbortMultipartUpload",
+                        "s3:GetBucketLocation",
+                        "s3:GetObject",
+                        "s3:ListBucket",
+                        "s3:ListBucketMultipartUploads",
+                        "s3:PutObject",
+                    ],
+                    effect=iam.Effect.ALLOW,
+                    resources=[kinesis_log.bucket_arn, kinesis_log.bucket_arn + "/*"],
+                    )
+                ]
+            )
+
+            stream_role.attach_inline_policy(stream_permissions)
 
             log_stream = firehose.CfnDeliveryStream(
                 self,

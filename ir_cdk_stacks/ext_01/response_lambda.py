@@ -2,6 +2,7 @@ import json
 import boto3
 import time
 import uuid
+import os
 
 s3 = boto3.client('s3')
 waf = boto3.client('wafv2')
