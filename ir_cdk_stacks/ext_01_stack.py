@@ -252,8 +252,8 @@ class Ext01Stack(core.Stack):
 
             # Currently IPSetReference is bugged
             #blacklist_ref = wafv2.CfnWebACL.IPSetReferenceStatementProperty()
-            ip_set_ref_stmnt = IPSetReferenceStatement()
-            ip_set_ref_stmnt.arn = blacklist.attr_arn
+            #ip_set_ref_stmnt = IPSetReferenceStatement()
+            #ip_set_ref_stmnt.arn = blacklist.attr_arn
 
             # Create a WAF
             waf = wafv2.CfnWebACL(
