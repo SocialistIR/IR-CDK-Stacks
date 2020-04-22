@@ -89,11 +89,10 @@ class AwsRegionValidator(Validator):
 class ApiArnValidator(Validator):
     def validate(self, document):
         # Regular expression for validating an AWS Account ID
-        aws_id_regex = "^[0-9]{12}$"
+        aws_id_regex = "^arn:.*:(apigateway|elasticloadbalancing):.*$"
         ok = regex.match(aws_id_regex, document.text)
-        ok = True
         if not ok:
             raise ValidationError(
-                message="Please enter a valid AWS Account ID",
+                message="Please enter a valid AWS API gateway or Elastic Load Balancer ARN",
                 cursor_position=len(document.text),
             )
