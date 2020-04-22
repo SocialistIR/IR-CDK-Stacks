@@ -14,14 +14,21 @@ class CdkStackStack(core.Stack):
     def __init__(self, scope: core.Construct, id: str, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
 
-        # The code that defines your stack goes here
+        bucket = s3.Bucket(self,
+            id = 'socialistir-test-cdk', 
+            bucket_name='socialistir-test-cdk', 
+            versioned=True, 
+            website_error_document='index.html', 
+            website_index_document='index.html'
+        )
+
         topic = sns.Topic(self, "CDKTestSNSTopic", topic_name="CDKTestSNSTopic")
         # topic.grant_publish(iam.ServicePrincipal("*"))
         topic.add_subscription(subs.EmailSubscription('s.mathur@unsw.edu.au'))
 
         trail = cloudtrail.Trail(self, "MyAmazingCloudTrail2")
 
-        trail.add_s3_event_selector(["arn:aws:s3:::socialistir/"],
+        trail.add_s3_event_selector(["arn:aws:s3:::socialistir-test-cdk/"],
                                     include_management_events=True,
                                     read_write_type=cloudtrail.ReadWriteType.WRITE_ONLY
                                     )
@@ -138,3 +145,5 @@ class CdkStackStack(core.Stack):
         )
 
         rule.add_target(event_target.LambdaFunction(response_lambda))
+
+
