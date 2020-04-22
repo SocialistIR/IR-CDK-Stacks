@@ -17,3 +17,12 @@ class CdkStackStack(core.Stack):
         # topic.grant_publish(iam.ServicePrincipal("*"))
         topic.add_subscription(subs.EmailSubscription('s.mathur@unsw.edu.au'))
 
+
+        trail = cloudtrail.Trail(self, "MyAmazingCloudTrail2")
+
+        # trail.add_s3_event_selector(["arn:aws:s3:::socialistir23/"])
+
+        trail.add_s3_event_selector(["arn:aws:s3:::socialistir/"],
+    		include_management_events=True,
+    		read_write_type=cloudtrail.ReadWriteType.WRITE_ONLY
+		)
