@@ -8,7 +8,6 @@ import datetime
 
 NACL_RULE_NUMBER_MAX = 32766
 
-waf = boto3.client("wafv2")
 sfn = boto3.client("stepfunctions")
 rds = boto3.client("rds")
 clw = boto3.client("cloudwatch")
@@ -94,33 +93,6 @@ def lambda_handler(event, context):
             f"Failed to send to Slack channel {slack_message['channel']}.\n\
             Error: {response.status} - {response.data}"
         )
-
-    # Put source IP to blacklist in WAF
-    blacklist = waf.get_ip_set(
-        Name=os.environ["waf_name"],
-        Scope=os.environ["waf_scope"],
-        Id=os.environ["waf_id"],
-    )
-    ipset = set(blacklist["IPSet"]["Addresses"])
-    for source in sources:
-        ipset.add(source + "/32")
-    new_ips = ipset.difference(set(blacklist["IPSet"]["Addresses"]))
-
-    # Ban IP temporarily using stepfunction
-    if len(new_ips) > 0:
-        response = waf.update_ip_set(
-            Name=blacklist["IPSet"]["Name"],
-            Scope=os.environ["waf_scope"],
-            Id=blacklist["IPSet"]["Id"],
-            Addresses=list(ipset),
-            LockToken=blacklist["LockToken"],
-        )
-
-        # Handle errors
-        if response["NextLockToken"]:
-            logger.info(f"Successfully added IPs {sources} to WAF IPSet")
-        else:
-            logger.error(f"Failed to add IPs to WAF IPSet")
 
     # Block IP ingress in Cluster's NACL
     # Find cluster
@@ -223,7 +195,7 @@ def lambda_handler(event, context):
         nacls.append({"id": network_acl_id, "rule_numbers": rule_numbers})
 
         # Execute unban lambda using stepfunction
-        jips = {"ips": list(new_ips), "network_acls": nacls}
+        jips = {"network_acls": nacls}
         try:
             response = sfn.start_execution(
                 stateMachineArn=os.environ["unban_sm_arn"], input=json.dumps(jips),
