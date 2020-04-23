@@ -433,7 +433,7 @@ class Ext01Stack(core.Stack):
                 s3_destination_configuration=firehose.CfnDeliveryStream.S3DestinationConfigurationProperty(
                     bucket_arn=kinesis_log.bucket_arn,
                     buffering_hints=firehose.CfnDeliveryStream.BufferingHintsProperty(
-                        interval_in_seconds=300,
+                        interval_in_seconds=120,
                         size_in_m_bs=5
                     ),
                     compression_format="UNCOMPRESSED",
