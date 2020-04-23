@@ -2,6 +2,7 @@ import sys
 from PyInquirer import prompt
 from socialist_ir.utils.validators import AwsAccountIdValidator
 from socialist_ir.in_aur_01_stack import InAur01Stack
+from socialist_ir.in_lam_01_stack import InLam01Stack
 from socialist_ir.config import Config
 from socialist_ir.cdk_menu import CdkMenu
 
@@ -105,7 +106,12 @@ class SocialistIr(CdkMenu):
                 elif answers["ir"] == "IN-API-02":
                     pass
                 elif answers["ir"] == "IN-LAM-01":
-                    pass
+                    stack = InLam01Stack(
+                        name="in-lam-01-stack",
+                        required_variables=[
+                            "webhook_url",
+                        ],
+                    )
                 elif answers["ir"] == "IN-CLW-01":
                     pass
                 elif answers["ir"] == "IN-CLT-01":
