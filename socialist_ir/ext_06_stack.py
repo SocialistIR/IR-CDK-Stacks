@@ -1,12 +1,12 @@
 from PyInquirer import prompt
-from socialist_ir.cdk_menu import CdkMenu
+from socialist_ir.cdk_menu import StackMenu
 from socialist_ir.utils.validators import (
     ApiArnValidator,
 )
 from socialist_ir.config import Config
 
 
-class Ext06Stack(CdkMenu):
+class Ext06Stack(StackMenu):
     def __init__(
         self,
         name="ext-06-stack",

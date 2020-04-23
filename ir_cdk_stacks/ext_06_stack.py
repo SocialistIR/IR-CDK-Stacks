@@ -16,42 +16,40 @@ import logging
 import jsii
 from datetime import timezone, datetime, timedelta
 
-# Fields to match
-ALL_QUERY_ARGS = wafv2.CfnRuleGroup.FieldToMatchProperty(
-    all_query_arguments={"Name": "all query arguments"})
-BODY = wafv2.CfnRuleGroup.FieldToMatchProperty(body={"Name": "body"})
-QUERY_STRING = wafv2.CfnRuleGroup.FieldToMatchProperty(
-    query_string={"Name": "query string"})
-SINGLE_HEADER = wafv2.CfnRuleGroup.FieldToMatchProperty(
-    single_header={"Name": "single header"})
-SINGLE_QUERY_ARG = wafv2.CfnRuleGroup.FieldToMatchProperty(
-    single_query_argument={"Name": "single query argument"})
-URI_PATH = wafv2.CfnRuleGroup.FieldToMatchProperty(
-    uri_path={"Name": "uri path"})
-
-NO_TEXT_TRANSFORMATION = wafv2.CfnRuleGroup.TextTransformationProperty(
-    priority=7, type="NONE")
-
-
-@jsii.implements(wafv2.CfnRuleGroup.IPSetReferenceStatementProperty)
-class IPSetReferenceStatement:
-    @property
-    def arn(self):
-        return self._arn
-
-    @arn.setter
-    def arn(self, value):
-        self._arn = value
-
-
 class Ext06Stack(core.Stack):
     def __init__(self, scope: core.Construct, id: str, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
 
         try:
             API_ARN = self.node.try_get_context("api_arn")
-            # Create rate based rule
+            # Create rate based rule group
             rbr_statement = wafv2.CfnRuleGroup.RateBasedStatementOneProperty(aggregate_key_type="IP", limit=100)
+
+            rbr_rule_group = wafv2.CfnRuleGroup(
+                self,
+                id="Spam",
+                capacity=200,
+                scope="REGIONAL",
+                visibility_config=wafv2.CfnRuleGroup.VisibilityConfigProperty(
+                    cloud_watch_metrics_enabled=True,
+                    metric_name="spam_attacks",
+                    sampled_requests_enabled=False
+                ),
+                rules= [
+                    wafv2.CfnRuleGroup.RuleProperty(
+                        name="spam",
+                        priority=1,
+                        statement=wafv2.CfnRuleGroup.StatementOneProperty(rate_based_statement=rbr_statement),
+                        visibility_config=wafv2.CfnRuleGroup.VisibilityConfigProperty(
+                            cloud_watch_metrics_enabled=False,
+                            metric_name="xss_attacks",
+                            sampled_requests_enabled=False
+                        ),
+                    ),
+                ]
+            )
+            rbr_ref = wafv2.CfnWebACL.RuleGroupReferenceStatementProperty(
+                arn=rbr_rule_group.attr_arn)
 
             # Create new WAF IPSet
             doslist = wafv2.CfnIPSet(
@@ -94,10 +92,10 @@ class Ext06Stack(core.Stack):
                     wafv2.CfnWebACL.RuleProperty(
                         name="Spam",
                         priority=1,
-                        statement=wafv2.CfnWebACL.StatementOneProperty(rate_based_statement=rbr_statement),
+                        statement=wafv2.CfnWebACL.StatementOneProperty(rule_group_reference_statement=rbr_ref),
                         visibility_config=wafv2.CfnWebACL.VisibilityConfigProperty(
                             cloud_watch_metrics_enabled=False,
-                            metric_name="rbr_requests",
+                            metric_name="spam_requests",
                             sampled_requests_enabled=False
                         ),
                         override_action=wafv2.CfnWebACL.OverrideActionProperty(
@@ -106,7 +104,7 @@ class Ext06Stack(core.Stack):
                     ),
                 ],
             )
-
+            
             # Create Susunban lambda
             lambda_dir_path = os.path.join(
                 os.getcwd(), "ir_cdk_stacks", "ext_06")
@@ -154,17 +152,22 @@ class Ext06Stack(core.Stack):
                     resources=[doslist.attr_arn],
                 )
             )
-
+            
             # Create dos stepfunction
             # Define a second state machine to unban the blacklisted IP after 1 hour
-            wait_step = sfn.Wait(
+            doswait_step = sfn.Wait(
+                self,
+                "Ext06ResponseStepWait",
+                time=sfn.WaitTime.duration(core.Duration.hours(1)),
+            )
+            suswait_step = sfn.Wait(
                 self,
                 "Ext06ResponseStepWait",
                 time=sfn.WaitTime.duration(core.Duration.hours(1)),
             )
             dosunban_step = sfn.Task(
                 self,
-                "Ext06ResponseStepUnban",
+                "Ext06ResponseStepDosUnban",
                 task=tasks.RunLambdaTask(
                     dosunban_lambda,
                     integration_pattern=sfn.ServiceIntegrationPattern.FIRE_AND_FORGET,
@@ -172,7 +175,7 @@ class Ext06Stack(core.Stack):
             )
             susunban_step = sfn.Task(
                 self,
-                "Ext06ResponseStepUnban",
+                "Ext06ResponseStepSosUnban",
                 task=tasks.RunLambdaTask(
                     susunban_lambda,
                     integration_pattern=sfn.ServiceIntegrationPattern.FIRE_AND_FORGET,
@@ -180,17 +183,18 @@ class Ext06Stack(core.Stack):
             )
             dos_statemachine = sfn.StateMachine(
                 self,
-                "Ext06ResponseUnbanStateMachine",
-                definition=wait_step.next(dosunban_step),
+                "Ext06ResponseDosUnbanStateMachine",
+                definition=doswait_step.next(dosunban_step),
                 timeout=core.Duration.hours(1.5),
             )
+            
             sus_statemachine = sfn.StateMachine(
                 self,
-                "Ext06ResponseUnbanStateMachine",
-                definition=wait_step.next(susunban_step),
+                "Ext06ResponseSusUnbanStateMachine",
+                definition=suswait_step.next(susunban_step),
                 timeout=core.Duration.hours(1.5),
             )
-
+            """
             # Create lambda function
             lambda_func = _lambda.Function(
                 self,
@@ -209,7 +213,7 @@ class Ext06Stack(core.Stack):
                     "sus_arn": sus_statemachine.state_machine_arn,
                 },
             )
-
+            
             kinesis_log = s3.Bucket(
                 self,
                 id='dos_logs',
@@ -326,7 +330,7 @@ class Ext06Stack(core.Stack):
                 id="API gateway association",
                 resource_arn=API_ARN,
                 web_acl_arn=waf.attr_arn,
-            )
+            )"""
 
         except Exception:
             logging.error(
