@@ -17,7 +17,7 @@ def lambda_handler(event, context):
         blacklist = waf.get_ip_set(
             Name=os.environ['ipset_name'], Scope=os.environ['ipset_scope'], Id=os.environ['ipset_id'])
         logger.info(
-            f"Successfully found IPset {os.environ['ipset_name']}, id= {os.environ['ipset_id']}\n{e}"
+            f"Successfully found IPset {os.environ['ipset_name']}, id= {os.environ['ipset_id']}"
         )
     except Exception as e:
         logger.error(
@@ -31,7 +31,7 @@ def lambda_handler(event, context):
         try:
             obj = s3.get_object(Bucket=bucket, Key=key)
             logger.info(
-                f"Successfully read from s3 bucket {bucket}\n{e}"
+                f"Successfully read from s3 bucket {bucket}"
             )
         except Exception as e:
             logger.error(
@@ -66,7 +66,7 @@ def lambda_handler(event, context):
                 LockToken=blacklist['LockToken']
             )
             logger.info(
-                f"Successfully updated IPset {blacklist['IPSet']['Name']}, id= {blacklist['IPSet']['Id']}\n{e}"
+                f"Successfully updated IPset {blacklist['IPSet']['Name']}, id= {blacklist['IPSet']['Id']}"
             )
         except Exception as e:
             logger.error(
@@ -80,7 +80,7 @@ def lambda_handler(event, context):
                 input=json.dumps(jips)
             )
             logger.info(
-                f"Successfully started state machine {os.environ['sfn_arn']}\n{e}"
+                f"Successfully started state machine {os.environ['sfn_arn']}"
             )
         except Exception as e:
             logger.error(

@@ -19,7 +19,7 @@ def lambda_handler(event, context):
             }
         )
         logger.info(
-            f"Successfully enabled logging on Web ACL {os.environ['waf_arn']}, with kinesis firehose {os.environ['firehose_arn']}\n{e}"
+            f"Successfully enabled logging on Web ACL {os.environ['waf_arn']}, with kinesis firehose {os.environ['firehose_arn']}"
         )
     except Exception as e:
         logger.error(

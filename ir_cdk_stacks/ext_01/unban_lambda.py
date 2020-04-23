@@ -15,7 +15,7 @@ def lambda_handler(event, context):
         blacklist = waf.get_ip_set(
             Name=os.environ['ipset_name'], Scope=os.environ['ipset_scope'], Id=os.environ['ipset_id'])
         logger.info(
-            f"Successfully found IPset {os.environ['ipset_name']}, id= {os.environ['ipset_id']}\n{e}"
+            f"Successfully found IPset {os.environ['ipset_name']}, id= {os.environ['ipset_id']}"
         )
     except Exception as e:
         logger.error(
@@ -32,7 +32,7 @@ def lambda_handler(event, context):
             LockToken=blacklist['LockToken']
         )
         logger.info(
-            f"Successfully updated IPset {os.environ['ipset_name']}, id= {os.environ['ipset_id']}\n{e}"
+            f"Successfully updated IPset {os.environ['ipset_name']}, id= {os.environ['ipset_id']}"
         )
     except Exception as e:
         logger.error(
