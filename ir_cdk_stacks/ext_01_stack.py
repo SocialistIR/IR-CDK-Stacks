@@ -349,6 +349,7 @@ class Ext01Stack(core.Stack):
                 task=tasks.RunLambdaTask(
                     unban_lambda,
                     integration_pattern=sfn.ServiceIntegrationPattern.FIRE_AND_FORGET,
+                    payload={"Input.$": "$"}
                 ),
             )
             statemachine = sfn.StateMachine(
