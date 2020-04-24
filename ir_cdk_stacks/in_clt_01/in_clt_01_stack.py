@@ -1,12 +1,12 @@
-
-# from aws_cdk.aws_events import Rule
 from aws_cdk import (
-    aws_s3 as s3,
     core,
     aws_cloudwatch as cloudwatch,
     aws_events as events,
     aws_lambda as _lambda,
     aws_iam as iam,
+    aws_events_targets as event_target,
+    aws_sns as sns,
+    aws_sns_subscriptions as subs
 )
 
 import os
@@ -43,7 +43,6 @@ class CdkStack(core.Stack):
                            enabled= True,
                            rule_name= "rulebycdk",
                            event_pattern= ep )
-                           # targets=[response_lambda])
 
         # 3. Create response lambda and add it as a target of the rule
         action = [
@@ -68,5 +67,11 @@ class CdkStack(core.Stack):
         )
         # rule.add_target(response_lambda)
 
+        rule.add_target(event_target.LambdaFunction(response_lambda))
+
         # 4. Create SNS topic and subscription
+        topic = sns.Topic(self, "CDKTestCLTAccess", topic_name="CDKTestCLTAccess")
+        # topic.grant_publish(iam.ServicePrincipal("*"))
+        topic.add_subscription(subs.EmailSubscription('y.tamakuwala@unsw.edu.au'))
+
         # 5. Create IAM allow/deny policy
