@@ -191,7 +191,7 @@ class InLam01Stack(core.Stack):
                 code=_lambda.Code.from_asset(lambda_dir_path),
                 environment={
                     "webhook_url": SLACK_WEBHOOK_URL,
-                    "lambdaDenyIAM" : "test"
+                    "lambdaDenyIAM" : deny_iam.managed_policy_arn
                 }
             )
             
