@@ -1,7 +1,7 @@
 from socialist_ir.socialist_ir import SocialistIr
 
 
-def main():
+def main() -> None:
     ir = SocialistIr(name="main", required_variables=["account", "region"])
     ir.run()
 
