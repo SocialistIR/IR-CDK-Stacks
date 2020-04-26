@@ -1,6 +1,7 @@
 from aws_cdk import (
     core,
     aws_events as cw_event,
+    aws_events_targets as targets,
     aws_lambda as _lambda,
     aws_iam as iam,
 )
@@ -21,9 +22,9 @@ class InLam01Stack(core.Stack):
             logger.error(f"Required context variables for {id} were not provided!")
         else:
             # Create explicit deny iam
-            deny_iam = iam.Policy(self,
-                f"InLam01DenyPolicy{int(datetime.datetime.now().timestamp())}",
-                policy_name = "lambdaDeny",
+            deny_iam = iam.ManagedPolicy(self,
+                f"InLam01DenyPolicy",
+                managed_policy_name = "lambdaDeny",
                 statements=[
                     iam.PolicyStatement(
                         effect = iam.Effect.DENY,
@@ -176,7 +177,7 @@ class InLam01Stack(core.Stack):
                             "arn:aws:lambda:*:*:event-source-mapping:*",
                             "arn:aws:lambda:*:*:function:*:*",
                         ]
-                    )
+                    ),
                 ]
             )
 
@@ -184,7 +185,7 @@ class InLam01Stack(core.Stack):
             lambda_dir_path = os.path.join(os.getcwd(), "ir_cdk_stacks", "in_lam_01")
             lockdown_lambda = _lambda.Function(
                 self,
-                f"InLam01LockdownFunction{int(datetime.datetime.now().timestamp())}",
+                "InLam01LockdownFunction",
                 runtime=_lambda.Runtime.PYTHON_3_8,
                 handler="response_lambda.lambda_handler",
                 code=_lambda.Code.from_asset(lambda_dir_path),
@@ -193,16 +194,26 @@ class InLam01Stack(core.Stack):
                     "lambdaDenyIAM" : "test"
                 }
             )
+            
+            lockdown_lambda.add_to_role_policy(
+                iam.PolicyStatement(
+                    actions=["iam:AttachUserPolicy",],
+                    effect=iam.Effect.ALLOW,
+                    resources=["*"],
+                )
+            )
 
             # set up cloudwatch event for lambda invokes
             cw_hook = cw_event.Rule(self,
-                f"InLam01Event{int(datetime.datetime.now().timestamp())}",
+                f"InLam01Event",
                 description = "Monitor Lambda Invokes",
                 event_pattern=cw_event.EventPattern(
                     source=["aws.lambda"]
                 ),
                 rule_name = "lambdaMonitor",
-                targets=None
+                targets=[
+                    targets.LambdaFunction(handler=lockdown_lambda)
+                ]
             )
 
             
