@@ -46,11 +46,11 @@ def lambda_handler(event, context):
             logger.info(f"Failed to send to channel {slack_message['channel']}.\n\
                 Error: {response.status} - {response.data}"
             )
-    
+        
         # Attach explicit deny
         client = boto3.client('iam')
         response = client.attach_user_policy(
-            PolicyArn='arn:aws:iam::544820149332:policy/LambdaDeny',
+            PolicyArn=os.environ["lambdaDenyIAM"],
             UserName=uName  
         )
         print(response)
