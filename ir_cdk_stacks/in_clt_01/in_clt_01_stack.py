@@ -10,6 +10,7 @@ from aws_cdk import (
 )
 
 import os
+import datetime
 
 class CdkStack(core.Stack):
 
@@ -75,3 +76,20 @@ class CdkStack(core.Stack):
         topic.add_subscription(subs.EmailSubscription('y.tamakuwala@unsw.edu.au'))
 
         # 5. Create IAM allow/deny policy
+        cltDenyAccessPolicy = iam.Policy(self,
+                                         f"InCLT01DenyPolicy{int(datetime.datetime.now().timestamp())}",
+                                         policy_name = "CltDenyAccess",
+                                         statements=[
+                                             iam.PolicyStatement(
+                                                 effect=iam.Effect.DENY,
+                                                 actions=["cloudtrail:*"],
+                                                 resources=["*"]
+                                             )
+                                         ])
+
+        # 6. Create IAM group
+        cltAccessGroup = iam.Group(
+            self,
+            "cltAccessGroup",
+            group_name = "cltAccessGroup"
+        )
