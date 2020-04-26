@@ -23,39 +23,7 @@ class Ext06Stack(core.Stack):
 
         try:
             API_ARN = self.node.try_get_context("api_arn")
-            # Create rate based rule group
-            #rbr_statement = wafv2.CfnRuleGroup.RateBasedStatementOneProperty(aggregate_key_type="IP", limit=100, scope_down_statement={})
-
-            """
-            rbr_rule_group = wafv2.CfnRuleGroup(
-                self,
-                id="Spam",
-                capacity=200,
-                scope="REGIONAL",
-                visibility_config=wafv2.CfnRuleGroup.VisibilityConfigProperty(
-                    cloud_watch_metrics_enabled=True,
-                    metric_name="spam_attacks",
-                    sampled_requests_enabled=False
-                ),
-                rules=[
-                    wafv2.CfnRuleGroup.RuleProperty(
-                        name="spam",
-                        priority=1,
-                        statement=wafv2.CfnRuleGroup.StatementOneProperty(rate_based_statement=rbr_statement),
-                        action=wafv2.CfnRuleGroup.RuleActionProperty(block={}),
-                        visibility_config=wafv2.CfnRuleGroup.VisibilityConfigProperty(
-                            cloud_watch_metrics_enabled=False,
-                            metric_name="rbr_attacks",
-                            sampled_requests_enabled=False
-                        ),
-                    ),
-                ]
-            )
-            """
-            #rbr_ref = wafv2.CfnWebACL.RuleGroupReferenceStatementProperty(
-            #    arn=rbr_rule_group.attr_arn)
-            
-            # Create new WAF IPSet
+            # Create the WAF IPSets
             doslist = wafv2.CfnIPSet(
                 self,
                 "Ext06DosIpSet",
@@ -85,6 +53,7 @@ class Ext06Stack(core.Stack):
             waf = wafv2.CfnWebACL(
                 self,
                 id="Ext06_WAF",
+                name="Ext06-WAF",
                 default_action=wafv2.CfnWebACL.DefaultActionProperty(allow={}),
                 scope="REGIONAL",
                 visibility_config=wafv2.CfnWebACL.VisibilityConfigProperty(
@@ -93,23 +62,9 @@ class Ext06Stack(core.Stack):
                     sampled_requests_enabled=True
                 ),
                 rules=[
-                    wafv2.CfnWebACL.RuleProperty(
-                        name="Spam",
-                        priority=2,
-                        statement=wafv2.CfnWebACL.StatementOneProperty(
-                            rate_based_statement=wafv2.CfnRuleGroup.StatementOneProperty(rate_based_statement=wafv2.CfnRuleGroup.RateBasedStatementOneProperty(aggregate_key_type="IP", limit=1000, scope_down_statement={}))),
-                        visibility_config=wafv2.CfnWebACL.VisibilityConfigProperty(
-                            cloud_watch_metrics_enabled=False,
-                            metric_name="spam_requests",
-                            sampled_requests_enabled=False
-                        ),
-                        override_action=wafv2.CfnWebACL.OverrideActionProperty(
-                            none={}
-                        ),
-                    ),
                 ],
             )
-            """
+            
             # Create Susunban lambda
             lambda_dir_path = os.path.join(
                 os.getcwd(), "ir_cdk_stacks", "ext_06")
@@ -298,7 +253,7 @@ class Ext06Stack(core.Stack):
                 rule_name="Ext06-trigger",
                 schedule=events.Schedule.expression(cron_string)
             )
-
+            
             setup_dir_path = os.path.join(
                 os.getcwd(), "ir_cdk_stacks", "ext_06")
             setup_func = _lambda.Function(
@@ -309,18 +264,22 @@ class Ext06Stack(core.Stack):
                 code=_lambda.Code.from_asset(setup_dir_path),
                 environment={
                     "waf_arn": waf.attr_arn,
+                    "waf_id": waf.attr_id,
+                    "waf_scope": waf.scope,
+                    "waf_name": waf.name,
                     "firehose_arn": log_stream.attr_arn,
                     "rule_name": "Ext06-trigger",
-
+                    "doslist_arn": doslist.attr_arn,
+                    "rate": "100",
                 },
             )
-
+            
             # Assign permissions to setup lambda
             setup_func.add_to_role_policy(
                 iam.PolicyStatement(
-                    actions=["wafv2:PutLoggingConfiguration"],
+                    actions=["wafv2:PutLoggingConfiguration", "wafv2:GetWebACL", "wafv2:UpdateWebACL"],
                     effect=iam.Effect.ALLOW,
-                    resources=[waf.attr_arn],
+                    resources=[waf.attr_arn, doslist.attr_arn],
                 )
             )
 
@@ -337,7 +296,6 @@ class Ext06Stack(core.Stack):
                 resource_arn=API_ARN,
                 web_acl_arn=waf.attr_arn,
             )
-        """
         except Exception:
             logging.error(
                 f"Required context variables for {id} were not provided!")
