@@ -76,9 +76,9 @@ class CdkStack(core.Stack):
         topic.add_subscription(subs.EmailSubscription('y.tamakuwala@unsw.edu.au'))
 
         # 5. Create IAM allow/deny policy
-        cltDenyAccessPolicy = iam.Policy(self,
-                                         f"InCLT01DenyPolicy{int(datetime.datetime.now().timestamp())}",
-                                         policy_name = "CltDenyAccess",
+        cltDenyAccessPolicy = iam.ManagedPolicy(self,
+                                         "InCLT01DenyPolicy",
+                                         managed_policy_name = "CltDenyAccess",
                                          statements=[
                                              iam.PolicyStatement(
                                                  effect=iam.Effect.DENY,
