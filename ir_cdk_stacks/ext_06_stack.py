@@ -23,6 +23,7 @@ class Ext06Stack(core.Stack):
 
         try:
             API_ARN = self.node.try_get_context("api_arn")
+            RATE = self.node.try_get_context("rate")
             # Create the WAF IPSets
             doslist = wafv2.CfnIPSet(
                 self,
@@ -42,13 +43,6 @@ class Ext06Stack(core.Stack):
                 name="Ext06SusIpSet",
             )
 
-            # Create reference statements
-
-            # Currently IPSetReference is bugged
-            #blacklist_ref = wafv2.CfnWebACL.IPSetReferenceStatementProperty()
-            #ip_set_ref_stmnt = IPSetReferenceStatement()
-            #ip_set_ref_stmnt.arn = blacklist.attr_arn
-
             # Create a WAF
             waf = wafv2.CfnWebACL(
                 self,
@@ -64,7 +58,7 @@ class Ext06Stack(core.Stack):
                 rules=[
                 ],
             )
-            
+
             # Create Susunban lambda
             lambda_dir_path = os.path.join(
                 os.getcwd(), "ir_cdk_stacks", "ext_06")
@@ -253,7 +247,7 @@ class Ext06Stack(core.Stack):
                 rule_name="Ext06-trigger",
                 schedule=events.Schedule.expression(cron_string)
             )
-            
+
             setup_dir_path = os.path.join(
                 os.getcwd(), "ir_cdk_stacks", "ext_06")
             setup_func = _lambda.Function(
@@ -270,10 +264,10 @@ class Ext06Stack(core.Stack):
                     "firehose_arn": log_stream.attr_arn,
                     "rule_name": "Ext06-trigger",
                     "doslist_arn": doslist.attr_arn,
-                    "rate": "100",
+                    "rate": str(RATE),
                 },
             )
-            
+
             # Assign permissions to setup lambda
             setup_func.add_to_role_policy(
                 iam.PolicyStatement(

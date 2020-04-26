@@ -12,7 +12,8 @@ def lambda_handler(event, context):
     waf = boto3.client('wafv2')
     ips = event["Input"]["ips"]
     try:
-        blacklist = waf.get_ip_set(Name=os.environ['ipset_name'], Scope=os.environ['ipset_scope'], Id=os.environ['ipset_id'])
+        blacklist = waf.get_ip_set(Name=os.environ['ipset_name'],
+                                   Scope=os.environ['ipset_scope'], Id=os.environ['ipset_id'])
         logger.info(
             f"Successfully found IPset {os.environ['ipset_name']}, id= {os.environ['ipset_id']}"
         )

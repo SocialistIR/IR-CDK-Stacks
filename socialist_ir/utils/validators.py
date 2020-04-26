@@ -55,6 +55,7 @@ class AwsAccountIdValidator(Validator):
                 cursor_position=len(document.text),
             )
 
+
 class ApiArnValidator(Validator):
     def validate(self, document):
         # Regular expression for validating an AWS Account ID
@@ -63,5 +64,20 @@ class ApiArnValidator(Validator):
         if not ok:
             raise ValidationError(
                 message="Please enter a valid AWS API gateway or Elastic Load Balancer ARN",
+                cursor_position=len(document.text),
+            )
+
+
+class RateValidator(Validator):
+    def validate(self, document):
+        if document.text.isdigit():
+            if int(document.text) < 100 or int(document.text) > 20000000:
+                raise ValidationError(
+                    message="Please enter an integer rate between 100 and 20000000 inclusive",
+                    cursor_position=len(document.text),
+                )
+        else:
+            raise ValidationError(
+                message="Please enter an integer rate between 100 and 20000000 inclusive",
                 cursor_position=len(document.text),
             )
