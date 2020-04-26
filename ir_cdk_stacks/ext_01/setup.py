@@ -25,3 +25,44 @@ def lambda_handler(event, context):
         logger.error(
             f"Failed to enable logging on Web ACL {os.environ['waf_arn']}, with kinesis firehose {os.environ['firehose_arn']}\n{e}"
         )
+    try:
+        wacl = waf.get_web_acl(
+            Name=os.environ['waf_name'],
+            Scope=os.environ['waf_scope'],
+            Id=os.environ['waf_id'],
+        )
+        logger.info(
+            f"Successfully got webacl {os.environ['waf_name']} with id{os.environ['waf_id']}"
+        )
+    except Exception as e:
+        logger.error(
+            f"Failed to get Web ACL {os.environ['waf_name']}, with id {os.environ['waf_id']}\n{e}"
+        )
+    rules = wacl['WebACL']['Rules']
+
+    blacklist = {
+        'Name': 'Blacklist',
+        'Priority': 0,
+        'Statement': {'IPSetReferenceStatement': {'ARN': os.environ['blacklist_arn']}},
+        'Action': {'Block': {}},
+        'VisibilityConfig': {'SampledRequestsEnabled': True, 'CloudWatchMetricsEnabled': True, 'MetricName': 'Blacklist'}
+    }
+    rules.append(blacklist)
+
+    try:
+        waf.update_web_acl(
+            Name=os.environ['waf_name'],
+            Scope=os.environ['waf_scope'],
+            Id=os.environ['waf_id'],
+            DefaultAction={'Allow': {}},
+            Rules=rules,
+            LockToken=wacl['LockToken'],
+            VisibilityConfig=wacl['WebACL']['VisibilityConfig']
+        )
+        logger.info(
+            f"Successfully updated webacl {os.environ['waf_name']} with id{os.environ['waf_id']}"
+        )
+    except Exception as e:
+        logger.error(
+            f"Failed to update Web ACL {os.environ['waf_name']}, with id {os.environ['waf_id']}\n{e}"
+        )
