@@ -2,6 +2,8 @@ import sys
 from PyInquirer import prompt
 from socialist_ir.utils.validators import AwsAccountIdValidator
 from socialist_ir.in_aur_01_stack import InAur01Stack
+from socialist_ir.ext_01_stack import Ext01Stack
+
 from socialist_ir.config import Config
 from socialist_ir.cdk_menu import CdkMenu
 
@@ -142,7 +144,12 @@ class SocialistIr(CdkMenu):
             if answers and answers["ir"]:
                 stack = None
                 if answers["ir"] == "EXT-01":
-                    pass
+                    stack = Ext01Stack(
+                        name="ext-01-stack",
+                        required_variables=[
+                            "api_arn",
+                        ],
+                    )
                 elif answers["ir"] == "EXT-02":
                     pass
                 elif answers["ir"] == "EXT-03":
