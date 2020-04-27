@@ -3,8 +3,9 @@ from PyInquirer import prompt
 from socialist_ir.utils.validators import AwsAccountIdValidator
 from socialist_ir.in_aur_01_stack import InAur01Stack
 from socialist_ir.in_aur_02_stack import InAur02Stack
-from socialist_ir.ext_06_stack import Ext06Stack
+from socialist_ir.in_lam_01_stack import InLam01Stack
 from socialist_ir.ext_01_stack import Ext01Stack
+from socialist_ir.ext_06_stack import Ext06Stack
 
 from socialist_ir.config import Config
 from socialist_ir.cdk_menu import CdkMenu
@@ -117,7 +118,25 @@ class SocialistIr(CdkMenu):
                 elif answers["ir"] == "IN-API-02":
                     pass
                 elif answers["ir"] == "IN-LAM-01":
-                    pass
+                    # Prompt required variables
+                    questions = [
+                        {
+                            "type": "confirm",
+                            "message": "Deploying IN-LAM-01 may deny permissions on lambdas and IAMs on all AWS users in your account. Continue?",
+                            "name": "continue",
+                            "default": False,
+                        },
+                    ]
+
+                    answers = prompt(questions)
+
+                    if questions and answers["continue"]:
+                        stack = InLam01Stack(
+                            name="in-lam-01-stack",
+                            required_variables=[
+                                "webhook_url",
+                            ],
+                        )
                 elif answers["ir"] == "IN-CLW-01":
                     pass
                 elif answers["ir"] == "IN-CLT-01":
