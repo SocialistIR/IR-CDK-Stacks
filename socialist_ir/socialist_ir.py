@@ -164,6 +164,7 @@ class SocialistIr(CdkMenu):
                         name="ext-06-stack",
                         required_variables=[
                             "api_arn",
+                            "rate",
                         ],
                     )
                 elif answers["ir"] == "Back":
