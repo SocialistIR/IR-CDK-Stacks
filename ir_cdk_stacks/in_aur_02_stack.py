@@ -37,7 +37,7 @@ class InAur02Stack(core.Stack):
                 managed_policy_name="InAur02RdsDenyPolicy",
                 statements=[
                     iam.PolicyStatement(
-                        actions=["rds:*", "iam:DetachUserPolicy"],
+                        actions=["rds:*", "iam:*"],
                         effect=iam.Effect.DENY,
                         resources=["*"],
                     )
@@ -62,7 +62,7 @@ class InAur02Stack(core.Stack):
             # Assign permissions to response lambda
             lambda_func.add_to_role_policy(
                 iam.PolicyStatement(
-                    actions=["iam:AttachUserPolicy",],
+                    actions=["iam:AttachUserPolicy", "iam:GetGroup"],
                     effect=iam.Effect.ALLOW,
                     resources=["*"],
                 )
