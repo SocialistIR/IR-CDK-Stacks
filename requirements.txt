@@ -53,6 +53,7 @@ aws-cdk.custom-resources==1.33.1
 aws-cdk.cx-api==1.33.1
 aws-cdk.region-info==1.33.1
 black==19.10b0
+boto3==1.12.41
 cattrs==1.0.0
 click==7.1.1
 constructs==3.0.2

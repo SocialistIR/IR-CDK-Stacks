@@ -43,7 +43,7 @@ class InAur01Stack(core.Stack):
 
             # Apply metric filter
             # Filter all metrics of failed login attempts in log
-            metric_filter = logs.MetricFilter(
+            logs.MetricFilter(
                 self,
                 "InAur01DetectionMetricFilter",
                 log_group=log_group,
@@ -54,7 +54,6 @@ class InAur01Stack(core.Stack):
                 ),
                 metric_value="1",
             )
-            log_group.add_metric_filter(metric_filter)
 
             # Create new SNS topic
             topic = sns.Topic(self, "InAur01DetectionTopic")
