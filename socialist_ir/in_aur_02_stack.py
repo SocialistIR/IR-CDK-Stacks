@@ -59,6 +59,11 @@ class InAur02Stack(StackMenu):
                 "message": "Please enter your Slack Webhook URL",
                 "validate": SlackWebhookValidator,
             },
+            {
+                "type": "input",
+                "name": "white_list_group",
+                "message": "Please enter the name of your white list IAM group",
+            },
         ]
 
         answers = prompt(questions)

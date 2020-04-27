@@ -47,19 +47,28 @@ def lambda_handler(event, context):
                 Error: {response.status} - {response.data}"
             )
 
-        username = detail["userIdentity"]["userName"]
-        if username in ["Le"]:
-            try:
-                iam.attach_user_policy(
-                    PolicyArn=os.environ["policy_arn"], UserName=username
-                )
-                logger.info(
-                    f"Successfully attached explicit deny policy to user {username}"
-                )
-            except Exception as e:
-                logger.error(
-                    f"Failed to attach explicit deny policy to user {username}.\n\
-                    Error: {e}"
-                )
+        # Check if user is in white list group
+        try:
+            group = iam.get_group(GroupName=os.environ["white_list_group"])
+            users = [user["UserName"] for user in group["Users"]]
+            username = detail["userIdentity"]["userName"]
+            if username not in users:
+                try:
+                    iam.attach_user_policy(
+                        PolicyArn=os.environ["policy_arn"], UserName=username
+                    )
+                    logger.info(
+                        f"Successfully attached explicit deny policy to user {username}"
+                    )
+                except Exception as e:
+                    logger.error(
+                        f"Failed to attach explicit deny policy to user {username}.\n\
+                        Error: {e}"
+                    )
+        except Exception:
+            logger.error(
+                f"Failed to get IAM group {os.environ['white_list_group']}.\n\
+                Error: {e}"
+            )
 
     return {"statusCode": 200, "body": message}
