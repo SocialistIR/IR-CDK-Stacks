@@ -6,7 +6,7 @@ with open("README.md") as fp:
 
 
 setuptools.setup(
-    name="cdk_stack",
+    name="IN-S3-01-cdk_stack",
     version="0.0.1",
 
     description="An empty CDK Python app",

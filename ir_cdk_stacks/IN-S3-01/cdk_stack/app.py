@@ -6,6 +6,6 @@ from cdk_stack.cdk_stack_stack import CdkStackStack
 
 
 app = core.App()
-CdkStackStack(app, "cdk-stack")
+CdkStackStack(app, "IN-S3-01-cdk-stack")
 
 app.synth()
