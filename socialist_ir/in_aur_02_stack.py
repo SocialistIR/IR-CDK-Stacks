@@ -13,7 +13,12 @@ class InAur02Stack(StackMenu):
     def __init__(
         self,
         name: str = "in-aur-02-stack",
-        required_variables: list = ["cluster_name", "notify_email", "webhook_url"],
+        required_variables: list = [
+            "cluster_name",
+            "notify_email",
+            "webhook_url",
+            "white_list_group",
+        ],
     ):
         super().__init__(name=name, required_variables=required_variables)
 
@@ -74,8 +79,10 @@ class InAur02Stack(StackMenu):
             and answers["cluster_name"]
             and answers["notify_email"]
             and answers["webhook_url"]
+            and answers["white_list_group"]
         ):
             self.config.set(self.name, "cluster_name", answers["cluster_name"])
             self.config.set(self.name, "notify_email", answers["notify_email"])
             self.config.set(self.name, "webhook_url", answers["webhook_url"])
+            self.config.set(self.name, "white_list_group", answers["white_list_group"])
             Config.save_config(self.config)

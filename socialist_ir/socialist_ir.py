@@ -104,6 +104,7 @@ class SocialistIr(CdkMenu):
                             "cluster_name",
                             "notify_email",
                             "webhook_url",
+                            "white_list_group",
                         ],
                     )
                 elif answers["ir"] == "IN-AUR-03":
