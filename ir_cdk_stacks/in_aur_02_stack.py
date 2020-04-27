@@ -20,8 +20,14 @@ class InAur02Stack(core.Stack):
         CLUSTER_NAME = self.node.try_get_context("cluster_name")
         NOTIFY_EMAIL = self.node.try_get_context("notify_email")
         SLACK_WEBHOOK_URL = self.node.try_get_context("webhook_url")
+        WHITE_LIST_GROUP = self.node.try_get_context("white_list_group")
 
-        if not CLUSTER_NAME or not NOTIFY_EMAIL or not SLACK_WEBHOOK_URL:
+        if (
+            not CLUSTER_NAME
+            or not NOTIFY_EMAIL
+            or not SLACK_WEBHOOK_URL
+            or not WHITE_LIST_GROUP
+        ):
             logger.error(f"Required context variables for {id} were not provided!")
         else:
             # Create explicit deny policy
@@ -50,6 +56,7 @@ class InAur02Stack(core.Stack):
                     "webhook_url": SLACK_WEBHOOK_URL,
                     "policy_arn": policy.managed_policy_arn,
                     "cluster_name": CLUSTER_NAME,
+                    "white_list_group": WHITE_LIST_GROUP,
                 },
             )
             # Assign permissions to response lambda
