@@ -9,7 +9,7 @@ from aws_cdk import aws_s3 as s3
 import aws_cdk.aws_events_targets as event_target
 import os
 
-class InS301StackPreprod(core.Stack):
+class InS301PreprodStack(core.Stack):
 
     def __init__(self, scope: core.Construct, id: str, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
