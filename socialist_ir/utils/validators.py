@@ -56,10 +56,21 @@ class AwsAccountIdValidator(Validator):
             )
 
 
+class ApiArnValidator(Validator):
+    def validate(self, document):
+        # Regular expression for validating an AWS Account ID
+        aws_id_regex = "^arn:.*:(apigateway|elasticloadbalancing):.*$"
+        ok = regex.match(aws_id_regex, document.text)
+        if not ok:
+            raise ValidationError(
+                message="Please enter a valid AWS API gateway or Elastic Load Balancer ARN",
+            )
+
+
 class AwsRegionValidator(Validator):
     def validate(self, document):
         # Regular expression for validating an AWS region
-        aws_regions = [
+        aws_regions=[
             "us-east-2",
             "us-east-1",
             "us-west-1",
@@ -80,7 +91,7 @@ class AwsRegionValidator(Validator):
             "me-south-1",
             "sa-east-1",
         ]
-        ok = document.text in aws_regions
+        ok=document.text in aws_regions
         if not ok:
             raise ValidationError(
                 message="Please enter a valid AWS Region",
@@ -88,13 +99,15 @@ class AwsRegionValidator(Validator):
             )
 
 
-class ApiArnValidator(Validator):
+class RateValidator(Validator):
     def validate(self, document):
-        # Regular expression for validating an AWS Account ID
-        aws_id_regex = "^arn:.*:(apigateway|elasticloadbalancing):.*$"
-        ok = regex.match(aws_id_regex, document.text)
-        if not ok:
+        if document.text.isdigit():
+            if int(document.text) < 100 or int(document.text) > 20000000:
+                raise ValidationError(
+                    message="Please enter an integer rate between 100 and 20000000 inclusive",
+                    cursor_position=len(document.text),
+                )
+        else:
             raise ValidationError(
-                message="Please enter a valid AWS API gateway or Elastic Load Balancer ARN",
-                cursor_position=len(document.text),
+                message="Please enter an integer rate between 100 and 20000000 inclusive",
             )
