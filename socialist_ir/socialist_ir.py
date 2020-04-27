@@ -2,6 +2,7 @@ import sys
 from PyInquirer import prompt
 from socialist_ir.utils.validators import AwsAccountIdValidator
 from socialist_ir.in_aur_01_stack import InAur01Stack
+from socialist_ir.in_aur_02_stack import InAur02Stack
 from socialist_ir.ext_06_stack import Ext06Stack
 from socialist_ir.ext_01_stack import Ext01Stack
 
@@ -100,7 +101,15 @@ class SocialistIr(CdkMenu):
                         ],
                     )
                 elif answers["ir"] == "IN-AUR-02":
-                    pass
+                    stack = InAur02Stack(
+                        name="in-aur-02-stack",
+                        required_variables=[
+                            "cluster_name",
+                            "notify_email",
+                            "webhook_url",
+                            "white_list_group",
+                        ],
+                    )
                 elif answers["ir"] == "IN-AUR-03":
                     pass
                 elif answers["ir"] == "IN-API-01":
