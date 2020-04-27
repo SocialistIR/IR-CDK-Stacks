@@ -4,6 +4,7 @@ from socialist_ir.utils.validators import (
     SlackWebhookValidator,
 )
 from socialist_ir.config import Config
+from socialist_ir.pen_testing.lambda_create import LambdaCreate
 
 
 class InLam01Stack(StackMenu):
@@ -14,7 +15,7 @@ class InLam01Stack(StackMenu):
     ):
         super().__init__(name=name, required_variables=required_variables)
 
-    '''
+
     def test(self) -> None:
         # Prompt tests
         questions = [
@@ -22,7 +23,7 @@ class InLam01Stack(StackMenu):
                 "type": "list",
                 "name": "test",
                 "message": "Select test to run:",
-                "choices": ["Brute-force Aurora (Postgres) password"],
+                "choices": ["Create Lambda"],
             },
         ]
 
@@ -30,12 +31,10 @@ class InLam01Stack(StackMenu):
 
         # Save variables to config
         if answers and answers["test"]:
-            if answers["test"] == "Brute-force Aurora (Postgres) password":
-                aurora_cracker = AuroraPwdCrack(
-                    name="aurora_pwd_crack", required_variables=["host", "port"]
-                )
-                aurora_cracker.run()
-    '''
+            if answers["test"] == "Create Lambda":
+                l = LambdaCreate()
+                l.run()
+
 
     def setup(self) -> None:
         # Prompt required variables

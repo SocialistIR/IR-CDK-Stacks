@@ -108,12 +108,25 @@ class SocialistIr(CdkMenu):
                 elif answers["ir"] == "IN-API-02":
                     pass
                 elif answers["ir"] == "IN-LAM-01":
-                    stack = InLam01Stack(
-                        name="in-lam-01-stack",
-                        required_variables=[
-                            "webhook_url",
-                        ],
-                    )
+                    # Prompt required variables
+                    questions = [
+                        {
+                            "type": "confirm",
+                            "message": "Deploying IN-LAM-01 may deny permissions on lambdas and IAMs on all AWS users in your account. Continue?",
+                            "name": "continue",
+                            "default": False,
+                        },
+                    ]
+
+                    answers = prompt(questions)
+
+                    if questions and answers["continue"]:
+                        stack = InLam01Stack(
+                            name="in-lam-01-stack",
+                            required_variables=[
+                                "webhook_url",
+                            ],
+                        )
                 elif answers["ir"] == "IN-CLW-01":
                     pass
                 elif answers["ir"] == "IN-CLT-01":

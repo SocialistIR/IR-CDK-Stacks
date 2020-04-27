@@ -4,11 +4,9 @@ from socialist_ir.config import Config
 
 
 class CdkMenu:
-    def __init__(self, name: str, required_variables: list):
+    def __init__(self, name: str, required_variables: list = []):
         if not name:
             raise ValueError("'name' argument is required")
-        if not required_variables:
-            raise ValueError("'required_variables' argument is required")
         self.name = name
         self.required_variables = required_variables
         self.config = Config.get_config()
@@ -61,7 +59,7 @@ class CdkMenu:
 
 
 class StackMenu(CdkMenu):
-    def __init__(self, name: str, required_variables: list):
+    def __init__(self, name: str, required_variables: list = []):
         super().__init__(name, required_variables)
 
     def aws_cdk_cli(self, cmd: str) -> None:
