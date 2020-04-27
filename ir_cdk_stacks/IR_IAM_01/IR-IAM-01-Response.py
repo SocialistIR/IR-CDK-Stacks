@@ -4,7 +4,6 @@ import boto3
 iam = boto3.client('iam')
 sns = boto3.client('sns')
 IAM_Allow_ModifyPolicyArn = 'arn:aws:iam::544820149332:policy/IAM_Allow_modify'
-IAM_Deny_ModifyPolicyArn = 'arn:aws:iam::544820149332:policy/IAM_Deny_modify'
 notificationTopicArn = 'arn:aws:sns:us-east-1:544820149332:send-email-no-SNS'
 IAM_modifyGroupName = 'IAM_Allow_Modify'
 
