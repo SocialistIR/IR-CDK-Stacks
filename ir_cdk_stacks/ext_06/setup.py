@@ -39,15 +39,22 @@ def lambda_handler(event, context):
             f"Failed to get Web ACL {os.environ['waf_name']}, with id {os.environ['waf_id']}\n{e}"
         )
     rules = wacl['WebACL']['Rules']
-
-    blacklist = {
-        'Name': 'Blacklist',
-        'Priority': 0,
-        'Statement': {'IPSetReferenceStatement': {'ARN': os.environ['blacklist_arn']}},
+    rbr = {
+        'Name': 'Spam',
+        'Priority': 3,
+        'Statement': {'RateBasedStatement': {'Limit': int(os.environ['rate']), 'AggregateKeyType': 'IP'}},
         'Action': {'Block': {}},
-        'VisibilityConfig': {'SampledRequestsEnabled': True, 'CloudWatchMetricsEnabled': True, 'MetricName': 'Blacklist'}
+        'VisibilityConfig': {'SampledRequestsEnabled': True, 'CloudWatchMetricsEnabled': True, 'MetricName': 'Spam'}
     }
-    rules.append(blacklist)
+    doslist = {
+        'Name': 'Dos',
+        'Priority': 0,
+        'Statement': {'IPSetReferenceStatement': {'ARN': os.environ['doslist_arn']}},
+        'Action': {'Block': {}},
+        'VisibilityConfig': {'SampledRequestsEnabled': True, 'CloudWatchMetricsEnabled': True, 'MetricName': 'Dos'}
+    }
+    rules.append(doslist)
+    rules.append(rbr)
 
     try:
         waf.update_web_acl(

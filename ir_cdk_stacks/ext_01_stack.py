@@ -34,17 +34,6 @@ NO_TEXT_TRANSFORMATION = wafv2.CfnRuleGroup.TextTransformationProperty(
     priority=7, type="NONE")
 
 
-@jsii.implements(wafv2.CfnRuleGroup.IPSetReferenceStatementProperty)
-class IPSetReferenceStatement:
-    @property
-    def arn(self):
-        return self._arn
-
-    @arn.setter
-    def arn(self, value):
-        self._arn = value
-
-
 class Ext01Stack(core.Stack):
     def __init__(self, scope: core.Construct, id: str, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
@@ -250,15 +239,11 @@ class Ext01Stack(core.Stack):
             lpt_ref = wafv2.CfnWebACL.RuleGroupReferenceStatementProperty(
                 arn=lpt_rule_group.attr_arn)
 
-            # Currently IPSetReference is bugged
-            #blacklist_ref = wafv2.CfnWebACL.IPSetReferenceStatementProperty()
-            #ip_set_ref_stmnt = IPSetReferenceStatement()
-            #ip_set_ref_stmnt.arn = blacklist.attr_arn
-
             # Create a WAF
             waf = wafv2.CfnWebACL(
                 self,
                 id="Ext01_WAF",
+                name="Ext01-WAF",
                 default_action=wafv2.CfnWebACL.DefaultActionProperty(allow={}),
                 scope="REGIONAL",
                 visibility_config=wafv2.CfnWebACL.VisibilityConfigProperty(
@@ -463,18 +448,22 @@ class Ext01Stack(core.Stack):
                 code=_lambda.Code.from_asset(setup_dir_path),
                 environment={
                     "waf_arn": waf.attr_arn,
+                    "waf_id": waf.attr_id,
+                    "waf_scope": waf.scope,
+                    "waf_name": waf.name,
                     "firehose_arn": log_stream.attr_arn,
                     "rule_name": "Ext01-trigger",
-
+                    "blacklist_arn": blacklist.attr_arn,
                 },
             )
 
             # Assign permissions to setup lambda
             setup_func.add_to_role_policy(
                 iam.PolicyStatement(
-                    actions=["wafv2:PutLoggingConfiguration"],
+                    actions=["wafv2:PutLoggingConfiguration", "wafv2:GetWebACL", "wafv2:UpdateWebACL"],
                     effect=iam.Effect.ALLOW,
-                    resources=[waf.attr_arn],
+                    resources=[waf.attr_arn, blacklist.attr_arn, xss_rule_group.attr_arn,
+                               sqli_rule_group.attr_arn, lpt_rule_group.attr_arn],
                 )
             )
 
