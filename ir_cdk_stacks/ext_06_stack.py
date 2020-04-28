@@ -16,14 +16,19 @@ import logging
 import jsii
 from datetime import timezone, datetime, timedelta
 
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 
 class Ext06Stack(core.Stack):
     def __init__(self, scope: core.Construct, id: str, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
 
-        try:
-            API_ARN = self.node.try_get_context("api_arn")
-            RATE = self.node.try_get_context("rate")
+        API_ARN = self.node.try_get_context("api_arn")
+        RATE = self.node.try_get_context("rate")
+
+        if not API_ARN or not RATE:
+            logger.error(f"Required context variables for {id} were not provided!")
+        else:
             # Create the WAF IPSets
             doslist = wafv2.CfnIPSet(
                 self,
@@ -290,6 +295,3 @@ class Ext06Stack(core.Stack):
                 resource_arn=API_ARN,
                 web_acl_arn=waf.attr_arn,
             )
-        except Exception:
-            logging.error(
-                f"Required context variables for {id} were not provided!")
