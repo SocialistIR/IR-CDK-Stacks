@@ -3,6 +3,10 @@ from PyInquirer import prompt
 from socialist_ir.utils.validators import AwsAccountIdValidator
 from socialist_ir.in_aur_01_stack import InAur01Stack
 from socialist_ir.in_s3_01_stack_prod import InS301StackProd
+
+from socialist_ir.in_s3_01_stack_preprod import InS301StackPreprod
+from socialist_ir.in_s3_01_stack_dev import InS301StackDev
+
 from socialist_ir.config import Config
 from socialist_ir.cdk_menu import CdkMenu
 
@@ -91,7 +95,7 @@ class SocialistIr(CdkMenu):
                         {
                             "type": "list",
                             "name": "envName",
-                            "message": "Which environment are you want deploying to?",
+                            "message": "Which environment does the currently configured AWS account belong to?",
                             "choices": [
                                 "dev",
                                 "pre-prod",
@@ -102,12 +106,18 @@ class SocialistIr(CdkMenu):
                     ans = prompt(ques)
 
                     if ans["envName"] == "dev":
-                        pass
+                        stack = InS301StackDev(
+                            name = "in-s3-01-dev-stack",
+                            required_variables=[]
+                            )
                     elif ans["envName"] == "pre-prod":
-                        pass
+                        stack = InS301StackPreprod(
+                            name = "in-s3-01-preprod-stack",
+                            required_variables=[]
+                            )
                     elif ans["envName"] == "prod":
                         stack = InS301StackProd(
-                            name = "in-s3-01-stack",
+                            name = "in-s3-01-prod-stack",
                             required_variables=[]
                             )
 

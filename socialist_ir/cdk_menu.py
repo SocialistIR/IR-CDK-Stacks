@@ -73,9 +73,6 @@ class StackMenu(CdkMenu):
         for var in self.required_variables:
             command.append("-c")
             command.append(f"{var}={self.config.get(self.name, var)}")
-
-        # command = " ".join(command)
-        # print(command)
         subprocess.run(command)
 
     def deploy(self) -> None:
