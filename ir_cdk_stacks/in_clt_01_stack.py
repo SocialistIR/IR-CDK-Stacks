@@ -22,7 +22,7 @@ class InClt01Stack(core.Stack):
         # 1. Create Cloudwatch Rule
         # 2. Make that rule Track Cloudtrail events
 
-        lambda_dir_path = os.path.join(os.getcwd(), "cdk")
+        lambda_dir_path = os.path.join(os.getcwd(), "ir_cdk_stacks", "in_clt_01")
         response_lambda = _lambda.Function(
             self,
             "InClt01ResponseFunction",
