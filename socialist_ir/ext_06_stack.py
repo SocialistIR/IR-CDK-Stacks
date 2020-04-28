@@ -22,18 +22,18 @@ class Ext06Stack(StackMenu):
             {
                 "type": "input",
                 "name": "response",
-                "message": "WARNING!!!! This test will send however many requests you defined in rate to your website\nTo continue, type y\nTo exit type n",
+                "message": "WARNING!!!! This test will send many requests to your website\nTo continue, type y\nTo exit type n\n",
                 "validate": YesOrNoValidator,
             },
 
         ]
 
         answers = prompt(questions)
-        print("Once the attack is complete, check the Ext06Suslist if its the first attack or the Ext06Doslist if its the second attack. Your IP address should appear there")
+        print("Roughly 5 minutes after the attack is complete, check the Ext06Suslist if its the first attack or the Ext06Doslist if its the second attack. Your IP address should appear there")
         if answers["response"] == 'y':
             dos_attack = DosUrl(
-                    name="dos_url", required_variables=["url"]
-                )
+                name="dos_url", required_variables=["invoke_url"]
+            )
             dos_attack.run()
 
     def setup(self):
