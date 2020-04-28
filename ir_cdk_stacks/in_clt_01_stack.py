@@ -12,13 +12,13 @@ from aws_cdk import (
 import os
 import datetime
 
-class CdkStack(core.Stack):
+class InClt01Stack(core.Stack):
 
     def __init__(self, scope: core.Construct, id: str, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
 
         # The code that defines your stack goes here
-
+        SLACK_WEBHOOK_URL = self.node.try_get_context("webhook_url")
         # 1. Create Cloudwatch Rule
         # 2. Make that rule Track Cloudtrail events
 
