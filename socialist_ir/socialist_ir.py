@@ -142,7 +142,7 @@ class SocialistIr(CdkMenu):
                     pass
                 elif answers["ir"] == "IN-CLT-01":
                     stack = InClt01Stack(
-                            name="in-lam-01-stack",
+                            name="in-clt-01-stack",
                             required_variables=[
                                 "webhook_url",
                             ],
