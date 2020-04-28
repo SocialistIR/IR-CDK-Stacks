@@ -67,7 +67,7 @@ entrypoints==0.3
 flake8==3.7.9
 flake8-annotations==2.1.0
 importlib-metadata==1.6.0
--e git+git@github.com:SocialistIR/IR-CDK-Stacks.git@a3f0f12f3ae4806e8bfb0af60c6956bbe233653b#egg=ir_cdk_stacks
+-e .
 jmespath==0.9.5
 jsii==1.4.1
 mccabe==0.6.1
