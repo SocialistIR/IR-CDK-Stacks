@@ -2,6 +2,7 @@ import sys
 from PyInquirer import prompt
 from socialist_ir.utils.validators import AwsAccountIdValidator
 from socialist_ir.in_aur_01_stack import InAur01Stack
+from socialist_ir.in_s3_01_stack_prod import InS301StackProd
 from socialist_ir.config import Config
 from socialist_ir.cdk_menu import CdkMenu
 
@@ -86,7 +87,30 @@ class SocialistIr(CdkMenu):
             if answers and answers["ir"]:
                 stack = None
                 if answers["ir"] == "IN-S3-01":
-                    pass
+                    ques = [
+                        {
+                            "type": "list",
+                            "name": "envName",
+                            "message": "Which environment are you want deploying to?",
+                            "choices": [
+                                "dev",
+                                "pre-prod",
+                                "prod"
+                            ],
+                        }
+                    ]
+                    ans = prompt(ques)
+
+                    if ans["envName"] == "dev":
+                        pass
+                    elif ans["envName"] == "pre-prod":
+                        pass
+                    elif ans["envName"] == "prod":
+                        stack = InS301StackProd(
+                            name = "in-s3-01-stack",
+                            required_variables=[]
+                            )
+
                 elif answers["ir"] == "IN-AUR-01":
                     stack = InAur01Stack(
                         name="in-aur-01-stack",

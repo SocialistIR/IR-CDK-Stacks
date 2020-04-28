@@ -107,20 +107,20 @@ class InS301StackProd(core.Stack):
         ############ throw errors on subsequent deploy or destruct or rollback    ############################################
         ############          S3 bucts are global across all AWS accounts         ############################################
         # 
-        # bucket = s3.Bucket(self,
-        #     id = 'socialistir-prod', 
-        #     bucket_name='socialistir-prod', 
-        #     versioned=True, 
-        #     website_error_document='index.html', 
-        #     website_index_document='index.html'
-        # )
-        # 
-        # trail = cloudtrail.Trail(self, "S3-Write-Operation-Trail")
-        # 
-        # trail.add_s3_event_selector(["arn:aws:s3:::socialistir-prod/"],
-        #                             include_management_events=True,
-        #                             read_write_type=cloudtrail.ReadWriteType.WRITE_ONLY
-        #                             )
+        bucket = s3.Bucket(self,
+            id = 'socialistir-prod', 
+            bucket_name='socialistir-prod', 
+            versioned=True, 
+            website_error_document='index.html', 
+            website_index_document='index.html'
+        )
+        
+        trail = cloudtrail.Trail(self, "S3-Write-Operation-Trail")
+        
+        trail.add_s3_event_selector(["arn:aws:s3:::socialistir-prod/"],
+                                    include_management_events=True,
+                                    read_write_type=cloudtrail.ReadWriteType.WRITE_ONLY
+                                    )
         # 
         ######################################################################################################################
 

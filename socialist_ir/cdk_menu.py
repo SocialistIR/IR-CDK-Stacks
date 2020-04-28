@@ -7,7 +7,7 @@ class CdkMenu:
     def __init__(self, name: str, required_variables: list):
         if not name:
             raise ValueError("'name' argument is required")
-        if not required_variables:
+        if not required_variables and required_variables != []:
             raise ValueError("'required_variables' argument is required")
         self.name = name
         self.required_variables = required_variables
@@ -73,6 +73,9 @@ class StackMenu(CdkMenu):
         for var in self.required_variables:
             command.append("-c")
             command.append(f"{var}={self.config.get(self.name, var)}")
+
+        # command = " ".join(command)
+        # print(command)
         subprocess.run(command)
 
     def deploy(self) -> None:
