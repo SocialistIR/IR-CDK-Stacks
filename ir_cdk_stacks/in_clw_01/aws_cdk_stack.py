@@ -55,6 +55,10 @@ class AwsCdkStack(core.Stack):
         )
 
         rule.add_target(response_lambda)
+        
+        
+        
+        
 
         # 4. Create SNS topic and subscription
         # 5. Create IAM allow/deny policy
