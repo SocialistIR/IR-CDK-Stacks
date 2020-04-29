@@ -97,7 +97,7 @@ def lambda_handler(event, context):
     if hasDenyPolicy(userName):
         print('User has deny policy. Will send slack notification')
 
-        # sendSlackNotification(message)
+        sendSlackNotification(message)
     else:
         if not hasValidGroup(userName):
             # 1. Attach Deny Policy
