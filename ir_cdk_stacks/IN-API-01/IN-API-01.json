@@ -33,7 +33,6 @@
       }
     }
   },
-
   "Parameters": {
     "CloudFrontCreateAccessLogBucket": {
       "Type" : "String",
