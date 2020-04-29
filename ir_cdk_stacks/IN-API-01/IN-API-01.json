@@ -1,4 +1,6 @@
 {
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Stack for IR_API_01",
   "Metadata": {
     "AWS::CloudFormation::Interface": {
       "ParameterGroups": [{
@@ -51,13 +53,13 @@
     },
     "WAFBlockPeriod": {
       "Type": "Number",
-      "Default": "240",
-      "Description": "Enter for how long (in minutes) IP addresses should be blocked. Default: 4 hours (240 minutes)"
+      "Default": "60",
+      "Description": "Enter for how long (in minutes) IP addresses should be blocked. Default: 1 hour (60 minutes)"
     },
     "WAFQuarantinePeriod": {
       "Type": "Number",
-      "Default": "240",
-      "Description": "Enter for how long (in minutes) IP addresses should be kept in quarantine. Default: 4 hours (240 minutes)"
+      "Default": "60",
+      "Description": "Enter for how long (in minutes) IP addresses should be kept in quarantine. Default: 1 hour (60 minutes)"
     }
   },
 
@@ -133,11 +135,11 @@
       "Type": "AWS::WAFRegional::WebACL",
       "DependsOn": ["WAFManualBlockRule", "WAFAutoBlockRule", "WAFAutoCountRule"],
       "Properties": {
-        "Name": "Malicious Requesters",
+        "Name": "IN-API-01_WACL",
         "DefaultAction": {
           "Type": "ALLOW"
         },
-        "MetricName": "MaliciousRequesters",
+        "MetricName": "IN-API-01",
         "Rules": [{
           "Action": {
             "Type": "BLOCK"
@@ -165,6 +167,39 @@
         }]
       }
     },
+	
+	"SnsTopic": {
+            "Type": "AWS::SNS::Topic",
+            "Properties": {
+                "Subscription": [
+                    {
+                        "Endpoint": "korupalli87122@gmail.com",
+                        "Protocol": "email"
+                    }
+                ],
+                "TopicName": "IN-API-01-IPBlocked"
+            }
+    },
+	"CloudWatchAlarm": {
+		"Type": "AWS::CloudWatch::Alarm",
+		"Properties": {
+			"AlarmName": "Test1",
+			"ComparisonOperator": "GreaterThanThreshold",
+			"EvaluationPeriods": 10,
+			"MetricName": "IPBlocked",
+			"Namespace": "IN-API-01-api-flood-logs",
+			"Period": 10,
+			"AlarmActions": [
+				{
+					"Ref": "SnsTopic"
+				}
+			],
+			"Statistic": "Sum",
+			"Threshold": "2.0",
+			"Unit": "Count"
+		}
+	},
+	
     "LambdaRole": {
       "Type": "AWS::IAM::Role",
       "Properties": {
@@ -195,8 +230,11 @@
             "Version": "2012-10-17",
             "Statement": [{
               "Effect": "Allow",
-              "Action": "waf:*",
-              "Resource": "*"
+            "Action": [
+                "waf-regional:UpdateIPSet",
+                "waf-regional:GetIPSet"
+            ],
+            "Resource": "arn:aws:waf-regional:*:*:ipset/*"
             }]
           }
         }, {
@@ -230,6 +268,18 @@
             }]
           }
         }, {
+          "PolicyName": "SNSAccess",
+          "PolicyDocument": {
+            "Version": "2012-10-17",
+            "Statement": [{
+              "Effect": "Allow",
+            "Action": [
+                "SNS:Publish"
+            ],
+            "Resource": "arn:aws:sns:us-east-1:544820149332:IN-API-01-IPBlocked"
+            }]
+          }
+        }, {
           "PolicyName": "CloudWatchAccess",
           "PolicyDocument": {
             "Version": "2012-10-17",
@@ -242,7 +292,7 @@
         }]
       }
     },
-    "LambdaWAFBlacklistingFunction": {
+    "INAPI01Lambda": {
       "Type": "AWS::Lambda::Function",
       "DependsOn": "LambdaRole",
       "Properties": {
@@ -270,10 +320,10 @@
     },
     "LambdaInvokePermission": {
       "Type": "AWS::Lambda::Permission",
-      "DependsOn": "LambdaWAFBlacklistingFunction",
+      "DependsOn": "INAPI01Lambda",
       "Properties": {
         "FunctionName": {
-          "Fn::GetAtt": ["LambdaWAFBlacklistingFunction", "Arn"]
+          "Fn::GetAtt": ["INAPI01Lambda", "Arn"]
         },
         "Action": "lambda:*",
         "Principal": "s3.amazonaws.com",
@@ -285,7 +335,7 @@
     "S3CloudFrontAccessLogBucket": {
       "Type": "AWS::S3::Bucket",
       "Condition" : "CreateBucket",
-      "DependsOn": "LambdaWAFBlacklistingFunction",
+      "DependsOn": "INAPI01Lambda",
       "Properties": {
         "BucketName": {
           "Ref": "CloudFrontAccessLogBucket"
@@ -303,7 +353,7 @@
               }
             },
             "Function": {
-              "Fn::GetAtt": ["LambdaWAFBlacklistingFunction", "Arn"]
+              "Fn::GetAtt": ["INAPI01Lambda", "Arn"]
             }
           }]
         }
