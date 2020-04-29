@@ -17,6 +17,10 @@ import jsii
 import boto3
 from datetime import timezone, datetime, timedelta
 
+
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+
 # Fields to match
 ALL_QUERY_ARGS = wafv2.CfnRuleGroup.FieldToMatchProperty(
     all_query_arguments={"Name": "all query arguments"})
@@ -38,9 +42,10 @@ class Ext01Stack(core.Stack):
     def __init__(self, scope: core.Construct, id: str, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
 
-        try:
-            API_ARN = self.node.try_get_context("api_arn")
-
+        API_ARN = self.node.try_get_context("api_arn")
+        if not API_ARN:
+            logger.error(f"Required context variables for {id} were not provided!")
+        else:
             # Create XSS rule
             xss_body = wafv2.CfnRuleGroup.StatementOneProperty(xss_match_statement=wafv2.CfnRuleGroup.XssMatchStatementProperty(
                 field_to_match=BODY, text_transformations=[NO_TEXT_TRANSFORMATION]))
@@ -480,7 +485,3 @@ class Ext01Stack(core.Stack):
                 resource_arn=API_ARN,
                 web_acl_arn=waf.attr_arn,
             )
-
-        except Exception:
-            logging.error(
-                f"Required context variables for {id} were not provided!")
