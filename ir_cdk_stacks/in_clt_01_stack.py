@@ -40,9 +40,9 @@ class InClt01Stack(core.Stack):
 
         rule = events.Rule(self,
                            "cdkRule",
-                           description= 'Rule created by CDK',
+                           description= 'Rule created by CDK for monitoring CloudTrail access',
                            enabled= True,
-                           rule_name= "rulebycdk",
+                           rule_name= "CltAccessRule",
                            event_pattern= ep )
 
         # 3. Create response lambda and add it as a target of the rule
