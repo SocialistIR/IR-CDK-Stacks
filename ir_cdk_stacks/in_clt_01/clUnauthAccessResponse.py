@@ -6,7 +6,7 @@ iam = boto3.client('iam')
 sns = boto3.client('sns')
 
 clTrDenyPolicy = 'CltDenyAccess'
-notificationTopic = 'CloudTrailCRUD'
+notificationTopic = 'CLTAccessCDK'
 cLTGroupName = 'cltAccessGroup'
 
 http = urllib3.PoolManager()

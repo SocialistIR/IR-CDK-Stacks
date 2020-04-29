@@ -66,12 +66,22 @@ class InClt01Stack(core.Stack):
                 effect=iam.Effect.ALLOW, resources=["*"],
             )
         )
-        # rule.add_target(response_lambda)
+
+        # Permission to send SNS notification
+        response_lambda.add_to_role_policy(
+            iam.PolicyStatement(
+                actions=[
+                    "sns:*"
+                ],
+                effect=iam.Effect.ALLOW,
+                resources=["*"],
+            )
+        )
 
         rule.add_target(event_target.LambdaFunction(response_lambda))
 
         # 4. Create SNS topic and subscription
-        topic = sns.Topic(self, "CDKTestCLTAccess", topic_name="CDKTestCLTAccess")
+        topic = sns.Topic(self, "CLTAccessCDK", topic_name="CLTAccessCDK")
         # topic.grant_publish(iam.ServicePrincipal("*"))
         topic.add_subscription(subs.EmailSubscription('y.tamakuwala@unsw.edu.au'))
 
