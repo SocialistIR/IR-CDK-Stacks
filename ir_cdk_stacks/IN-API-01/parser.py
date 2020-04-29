@@ -1,13 +1,3 @@
-'''
-Copyright 2016 Amazon.com, Inc. or its affiliates. All Rights Reserved.
-
-Licensed under the Amazon Software License (the "License"). You may not use this file except in compliance with the License. A copy of the License is located at
-
-    http://aws.amazon.com/asl/
-
-or in the "license" file accompanying this file. This file is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, express or implied. See the License for the specific language governing permissions and limitations under the License.
-'''
-
 import json
 import urllib
 import boto3
@@ -18,10 +8,6 @@ import math
 
 print('Loading function')
 
-#======================================================================================================================
-# Contants
-#======================================================================================================================
-# Configurables
 OUTPUT_BUCKET = None
 IP_SET_ID_MANUAL_BLOCK = None
 IP_SET_ID_AUTO_BLOCK = None
@@ -43,9 +29,8 @@ LINE_FORMAT = {
     'source_ip' : 4
 }
 
-#======================================================================================================================
-# Auxiliary Functions
-#======================================================================================================================
+notificationTopicArn = 'arn:aws:sns:us-east-1:544820149332:IN-API-01-IPBlocked'
+
 def get_outstanding_requesters(bucket_name, key_name):
     print '[get_outstanding_requesters] Start'
 
@@ -309,6 +294,21 @@ def update_waf_ip_set(outstanding_requesters, ip_set_id, ip_set_already_blocked)
         print "[update_waf_ip_set] \tBlock remaining outstanding requesters"
         #--------------------------------------------------------------------------------------------------------------
         for k in top_outstanding_requesters.keys():
+            print 'sending notification'
+            
+            now_timestamp = datetime.datetime.now()
+            now_timestamp_str = now_timestamp.strftime("%Y-%m-%d %H:%M:%S")
+            message = 'Blocking user with IP address ' + str(k) + ' at time ' + now_timestamp_str
+            sns = boto3.client('sns')
+            response = sns.publish(
+                TopicArn=notificationTopicArn,
+                Message=message,
+                Subject='New IP address with Illegal number of requests',
+                MessageStructure='string'
+            )
+            
+            print 'sent notification'
+            
             updates_list.append({
                 'Action': 'INSERT',
                 'IPSetDescriptor': {
@@ -329,9 +329,6 @@ def update_waf_ip_set(outstanding_requesters, ip_set_id, ip_set_already_blocked)
     print "[update_waf_ip_set] End"
     return counter
 
-#======================================================================================================================
-# Lambda Entry Point
-#======================================================================================================================
 def lambda_handler(event, context):
     print '[lambda_handler] Start'
     bucket_name = event['Records'][0]['s3']['bucket']['name']
