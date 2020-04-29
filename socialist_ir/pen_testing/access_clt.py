@@ -23,4 +23,21 @@ class AccessClt(CdkMenu):
         super().__init__(name=name, required_variables=required_variables)
 
     # def execute(self) -> bool:
-
+    #     clt = boto3.client('cloudtrail')
+    #
+    #     while True:
+    #         try:
+    #             response = clt.lookup_events(
+    #                 LookupAttributes=[
+    #                     {
+    #                         'AttributeKey': 'ReadOnly',
+    #                         'AttributeValue': 'string'
+    #                     },
+    #                 ],
+    #                 # StartTime=datetime(2015, 1, 1),
+    #                 # EndTime=datetime(2015, 1, 1),
+    #                 # EventCategory='insight',
+    #                 MaxResults=123,
+    #                 NextToken='string'
+    #             )
+    #     return True
