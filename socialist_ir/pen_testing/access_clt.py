@@ -6,13 +6,8 @@ from aws_cdk import (
     aws_lambda as _lambda,
 )
 import boto3
-import os
-import json
-import yaml
-import zipfile
+import botocore.exceptions as be
 import time
-import datetime
-
 
 class AccessClt(CdkMenu):
     def __init__(
@@ -22,22 +17,27 @@ class AccessClt(CdkMenu):
     ):
         super().__init__(name=name, required_variables=required_variables)
 
-    # def execute(self) -> bool:
-    #     clt = boto3.client('cloudtrail')
-    #
-    #     while True:
-    #         try:
-    #             response = clt.lookup_events(
-    #                 LookupAttributes=[
-    #                     {
-    #                         'AttributeKey': 'ReadOnly',
-    #                         'AttributeValue': 'string'
-    #                     },
-    #                 ],
-    #                 # StartTime=datetime(2015, 1, 1),
-    #                 # EndTime=datetime(2015, 1, 1),
-    #                 # EventCategory='insight',
-    #                 MaxResults=123,
-    #                 NextToken='string'
-    #             )
-    #     return True
+    def execute(self) -> bool:
+        clt = boto3.client('cloudtrail')
+
+        while True:
+            try:
+                response = clt.lookup_events(
+                    LookupAttributes=[
+                        {
+                            'AttributeKey': 'ReadOnly',
+                            'AttributeValue': 'false'
+                        },
+                    ],
+                    MaxResults=10,
+                )
+                print('EventId of some activity: '+ str(response['Events'][0]['EventId']))
+                time.sleep(3)
+            except be.ClientError:
+                print('Client doesnt have permission. Check IAM policies to access Cloudtrail.')
+                break
+            except Exception as ex:
+                print(ex)
+                break
+
+        return True

@@ -1,21 +1,20 @@
 import json
 import boto3
 import urllib3
+import os
 
 iam = boto3.client('iam')
 sns = boto3.client('sns')
 
 clTrDenyPolicy = 'CltDenyAccess'
 notificationTopic = 'CLTAccessCDK'
-cLTGroupName = 'cltAccessGroup'
 
 http = urllib3.PoolManager()
-webhook_url = "https://hooks.slack.com/services/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"
 
 def hasValidGroup(userName):
     inline_user_groups = iam.list_groups_for_user(UserName=userName)
-
-    print('Check Valid Group')
+    cLTGroupName = os.environ["white_list_group"]
+    print('Checking Valid Group')
 
     found = False
     for group in inline_user_groups['Groups']:
@@ -72,7 +71,7 @@ def sendNotification(message):
 
 def sendSlackNotification(message):
     message = "IN-CLT-01 Unauthorised CloudTrail Access:\n" + message
-    # webhook_url = os.environ["webhook_url"]
+    webhook_url = os.environ["webhook_url"]
 
     slack_message = {"channel": "ir-cdk-stacks", "text": message}
     encoded_data = json.dumps(slack_message).encode("utf-8")
