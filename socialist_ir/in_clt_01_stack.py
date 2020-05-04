@@ -52,21 +52,21 @@ class InClt01Stack(StackMenu):
             self.config.set(self.name, "white_list_group", answers["white_list_group"])
             Config.save_config(self.config)
 
-        def test(self) -> None:
-            # Prompt tests
-            questions = [
-                {
-                    "type": "list",
-                    "name": "test",
-                    "message": "Select test to run:",
-                    "choices": ["Access Cloudtrail"],
-                },
-            ]
+    def test(self) -> None:
+        # Prompt tests
+        questions = [
+            {
+                "type": "list",
+                "name": "test",
+                "message": "Select test to run:",
+                "choices": ["Access Cloudtrail"],
+            },
+        ]
 
-            answers = prompt(questions)
+        answers = prompt(questions)
 
-            # Save variables to config
-            if answers and answers["test"]:
-                if answers["test"] == "Access Cloudtrail":
-                    access_clt_checker = AccessClt(name="access_clt", required_variables=[])
-                    access_clt_checker.run()
+        # Save variables to config
+        if answers and answers["test"]:
+            if answers["test"] == "Access Cloudtrail":
+                access_clt_checker = AccessClt(name="access_clt", required_variables=[])
+                access_clt_checker.run()
