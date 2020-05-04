@@ -144,7 +144,9 @@ class SocialistIr(CdkMenu):
                     stack = InClt01Stack(
                             name="in-clt-01-stack",
                             required_variables=[
+                                "notify_email",
                                 "webhook_url",
+                                "white_list_group",
                             ],
                         )
                     
