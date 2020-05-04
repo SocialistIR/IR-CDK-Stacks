@@ -5,12 +5,14 @@ from socialist_ir.utils.validators import (
     SlackWebhookValidator,
 )
 from socialist_ir.config import Config
+from socialist_ir.pen_testing.access_clt import AccessClt
+
 
 class InClt01Stack(StackMenu):
     def __init__(
-        self,
-        name: str = "in-clt-01-stack",
-        required_variables: list = ["webhook_url", "notify_email", "white_list_group"],
+            self,
+            name: str = "in-clt-01-stack",
+            required_variables: list = ["webhook_url", "notify_email", "white_list_group"],
     ):
         super().__init__(name=name, required_variables=required_variables)
 
@@ -40,7 +42,7 @@ class InClt01Stack(StackMenu):
 
         # Save variables to config
         if (
-            answers
+                answers
                 and answers["notify_email"]
                 and answers["webhook_url"]
                 and answers["white_list_group"]
@@ -50,4 +52,21 @@ class InClt01Stack(StackMenu):
             self.config.set(self.name, "white_list_group", answers["white_list_group"])
             Config.save_config(self.config)
 
-        
+        def test(self) -> None:
+            # Prompt tests
+            questions = [
+                {
+                    "type": "list",
+                    "name": "test",
+                    "message": "Select test to run:",
+                    "choices": ["Access Cloudtrail"],
+                },
+            ]
+
+            answers = prompt(questions)
+
+            # Save variables to config
+            if answers and answers["test"]:
+                if answers["test"] == "Access Cloudtrail":
+                    access_clt_checker = AccessClt(name="access_clt", required_variables=[])
+                    access_clt_checker.run()
