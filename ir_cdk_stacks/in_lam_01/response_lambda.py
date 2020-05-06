@@ -54,6 +54,17 @@ def lambda_handler(event, context):
             UserName=uName
         )
         print(response)
+
+        # This code should work, but times out due to function not being properly created yet
+        # Can't properly debug as don't have access to CloudWatch Logs!!!
+        # Can't add sleep as otherwise costs ramp up
+        # Once off CloudWatch Event?
+        if eventName.startswith("CreateFunction"):
+            client = boto3.client('lambda')
+            response = client.delete_function(
+                FunctionName=functionName
+            )
+            print(response)
         
 '''
 # S3 BUCKET CODE - DELAY OF 10-20 minutes
