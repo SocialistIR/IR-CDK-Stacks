@@ -6,6 +6,7 @@ from socialist_ir.in_aur_02_stack import InAur02Stack
 from socialist_ir.in_lam_01_stack import InLam01Stack
 from socialist_ir.ext_01_stack import Ext01Stack
 from socialist_ir.ext_06_stack import Ext06Stack
+from socialist_ir.in_clt_01_stack import InClt01Stack
 
 from socialist_ir.config import Config
 from socialist_ir.cdk_menu import CdkMenu
@@ -140,7 +141,15 @@ class SocialistIr(CdkMenu):
                 elif answers["ir"] == "IN-CLW-01":
                     pass
                 elif answers["ir"] == "IN-CLT-01":
-                    pass
+                    stack = InClt01Stack(
+                            name="in-clt-01-stack",
+                            required_variables=[
+                                "notify_email",
+                                "webhook_url",
+                                "white_list_group",
+                            ],
+                        )
+                    
                 elif answers["ir"] == "IN-IAM-01":
                     pass
                 elif answers["ir"] == "Back":
