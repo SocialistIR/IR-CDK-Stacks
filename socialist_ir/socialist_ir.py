@@ -2,10 +2,15 @@ import sys
 from PyInquirer import prompt
 from socialist_ir.utils.validators import AwsAccountIdValidator
 from socialist_ir.in_aur_01_stack import InAur01Stack
+from socialist_ir.in_aur_02_stack import InAur02Stack
+from socialist_ir.in_lam_01_stack import InLam01Stack
+from socialist_ir.ext_01_stack import Ext01Stack
+from socialist_ir.ext_06_stack import Ext06Stack
+from socialist_ir.in_clt_01_stack import InClt01Stack
 from socialist_ir.in_s3_01_stack_prod import InS301StackProd
-
 from socialist_ir.in_s3_01_stack_preprod import InS301StackPreprod
 from socialist_ir.in_s3_01_stack_dev import InS301StackDev
+
 
 from socialist_ir.config import Config
 from socialist_ir.cdk_menu import CdkMenu
@@ -131,7 +136,15 @@ class SocialistIr(CdkMenu):
                         ],
                     )
                 elif answers["ir"] == "IN-AUR-02":
-                    pass
+                    stack = InAur02Stack(
+                        name="in-aur-02-stack",
+                        required_variables=[
+                            "cluster_name",
+                            "notify_email",
+                            "webhook_url",
+                            "white_list_group",
+                        ],
+                    )
                 elif answers["ir"] == "IN-AUR-03":
                     pass
                 elif answers["ir"] == "IN-API-01":
@@ -139,11 +152,37 @@ class SocialistIr(CdkMenu):
                 elif answers["ir"] == "IN-API-02":
                     pass
                 elif answers["ir"] == "IN-LAM-01":
-                    pass
+                    # Prompt required variables
+                    questions = [
+                        {
+                            "type": "confirm",
+                            "message": "Deploying IN-LAM-01 may deny permissions on lambdas and IAMs on all AWS users in your account. Continue?",
+                            "name": "continue",
+                            "default": False,
+                        },
+                    ]
+
+                    answers = prompt(questions)
+
+                    if questions and answers["continue"]:
+                        stack = InLam01Stack(
+                            name="in-lam-01-stack",
+                            required_variables=[
+                                "webhook_url",
+                            ],
+                        )
                 elif answers["ir"] == "IN-CLW-01":
                     pass
                 elif answers["ir"] == "IN-CLT-01":
-                    pass
+                    stack = InClt01Stack(
+                            name="in-clt-01-stack",
+                            required_variables=[
+                                "notify_email",
+                                "webhook_url",
+                                "white_list_group",
+                            ],
+                        )
+                    
                 elif answers["ir"] == "IN-IAM-01":
                     pass
                 elif answers["ir"] == "Back":
@@ -176,7 +215,12 @@ class SocialistIr(CdkMenu):
             if answers and answers["ir"]:
                 stack = None
                 if answers["ir"] == "EXT-01":
-                    pass
+                    stack = Ext01Stack(
+                        name="ext-01-stack",
+                        required_variables=[
+                            "api_arn",
+                        ],
+                    )
                 elif answers["ir"] == "EXT-02":
                     pass
                 elif answers["ir"] == "EXT-03":
@@ -186,7 +230,13 @@ class SocialistIr(CdkMenu):
                 elif answers["ir"] == "EXT-05":
                     pass
                 elif answers["ir"] == "EXT-06":
-                    pass
+                    stack = Ext06Stack(
+                        name="ext-06-stack",
+                        required_variables=[
+                            "api_arn",
+                            "rate",
+                        ],
+                    )
                 elif answers["ir"] == "Back":
                     return
                 if stack:

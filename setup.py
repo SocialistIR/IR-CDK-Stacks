@@ -14,12 +14,9 @@ setuptools.setup(
     author="author",
     package_dir={"": "ir_cdk_stacks"},
     packages=setuptools.find_packages(where="ir_cdk_stacks"),
-    install_requires=["aws-cdk.core==1.34.1",
-        "aws_cdk.aws_sns",
-        "aws_cdk.aws_sns_subscriptions",
-        "aws_cdk.aws_iam",
-        "aws_cdk.aws_cloudtrail",
-        "aws_cdk.aws_events_targets"],
+
+    install_requires=["aws-cdk.core==1.35.0",],
+
     python_requires=">=3.6",
     classifiers=[
         "Development Status :: 4 - Beta",
