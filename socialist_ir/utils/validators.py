@@ -70,7 +70,7 @@ class ApiArnValidator(Validator):
 class AwsRegionValidator(Validator):
     def validate(self, document):
         # Regular expression for validating an AWS region
-        aws_regions=[
+        aws_regions = [
             "us-east-2",
             "us-east-1",
             "us-west-1",
@@ -91,7 +91,7 @@ class AwsRegionValidator(Validator):
             "me-south-1",
             "sa-east-1",
         ]
-        ok=document.text in aws_regions
+        ok = document.text in aws_regions
         if not ok:
             raise ValidationError(
                 message="Please enter a valid AWS Region",
@@ -110,4 +110,12 @@ class RateValidator(Validator):
         else:
             raise ValidationError(
                 message="Please enter an integer rate between 100 and 20000000 inclusive",
+            )
+
+
+class YesOrNoValidator(Validator):
+    def validate(self, document):
+        if not (document.text == 'y' or document.text == 'no'):
+            raise ValidationError(
+                message="Please enter y or n",
             )
