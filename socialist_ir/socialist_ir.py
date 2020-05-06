@@ -7,6 +7,10 @@ from socialist_ir.in_lam_01_stack import InLam01Stack
 from socialist_ir.ext_01_stack import Ext01Stack
 from socialist_ir.ext_06_stack import Ext06Stack
 from socialist_ir.in_clt_01_stack import InClt01Stack
+from socialist_ir.in_s3_01_stack_prod import InS301StackProd
+from socialist_ir.in_s3_01_stack_preprod import InS301StackPreprod
+from socialist_ir.in_s3_01_stack_dev import InS301StackDev
+
 
 from socialist_ir.config import Config
 from socialist_ir.cdk_menu import CdkMenu
@@ -92,7 +96,36 @@ class SocialistIr(CdkMenu):
             if answers and answers["ir"]:
                 stack = None
                 if answers["ir"] == "IN-S3-01":
-                    pass
+                    ques = [
+                        {
+                            "type": "list",
+                            "name": "envName",
+                            "message": "Which environment does the currently configured AWS account belong to?",
+                            "choices": [
+                                "dev",
+                                "pre-prod",
+                                "prod"
+                            ],
+                        }
+                    ]
+                    ans = prompt(ques)
+
+                    if ans["envName"] == "dev":
+                        stack = InS301StackDev(
+                            name = "in-s3-01-dev-stack",
+                            required_variables=[]
+                            )
+                    elif ans["envName"] == "pre-prod":
+                        stack = InS301StackPreprod(
+                            name = "in-s3-01-preprod-stack",
+                            required_variables=[]
+                            )
+                    elif ans["envName"] == "prod":
+                        stack = InS301StackProd(
+                            name = "in-s3-01-prod-stack",
+                            required_variables=[]
+                            )
+
                 elif answers["ir"] == "IN-AUR-01":
                     stack = InAur01Stack(
                         name="in-aur-01-stack",
