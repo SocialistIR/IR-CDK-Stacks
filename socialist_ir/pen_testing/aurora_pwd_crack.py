@@ -9,7 +9,7 @@ from socialist_ir.config import Config
 class AuroraPwdCrack(CdkMenu):
     def __init__(
         self,
-        name: str = "aurora_pwd_crack",
+        name: str = "aurora-pwd-crack",
         required_variables: list = ["host", "port"],
     ):
         super().__init__(name=name, required_variables=required_variables)

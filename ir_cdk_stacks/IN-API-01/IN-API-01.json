@@ -5,22 +5,11 @@
     "AWS::CloudFormation::Interface": {
       "ParameterGroups": [{
         "Label": {
-          "default": "S3 Location"
-        },
-        "Parameters": ["CloudFrontCreateAccessLogBucket","CloudFrontAccessLogBucket"]
-      }, {
-        "Label": {
           "default": "Rate-Based Blacklisting Parameters"
         },
         "Parameters": ["RequestThreshold", "WAFBlockPeriod", "WAFQuarantinePeriod"]
       }],
       "ParameterLabels": {
-        "CloudFrontCreateAccessLogBucket": {
-          "default": "Create CloudFront Access Log Bucket"
-        },
-        "CloudFrontAccessLogBucket": {
-          "default": "CloudFront Access Log Bucket Name"
-        },
         "RequestThreshold": {
           "default": "Request Threshold"
         },
@@ -33,18 +22,8 @@
       }
     }
   },
+
   "Parameters": {
-    "CloudFrontCreateAccessLogBucket": {
-      "Type" : "String",
-      "Default" : "yes",
-      "AllowedValues" : ["yes", "no"],
-      "Description" : "Select Yes to create a new S3 bucket for CloudFront Access Logs. Select No if you already have an S3 bucket for CloudFront Access logs."
-    },
-    "CloudFrontAccessLogBucket": {
-      "Type": "String",
-      "Default": "",
-      "Description": "Enter the name of the S3 bucket where you will store the CloudFront access logs (e.g., http://bucket.s3-aws-region.amazonaws.com)"
-    },
     "RequestThreshold": {
       "Type": "Number",
       "Default": "400",
@@ -60,10 +39,6 @@
       "Default": "60",
       "Description": "Enter for how long (in minutes) IP addresses should be kept in quarantine. Default: 1 hour (60 minutes)"
     }
-  },
-
-  "Conditions" : {
-    "CreateBucket" : {"Fn::Equals" : [{"Ref" : "CloudFrontCreateAccessLogBucket"}, "yes"]}
   },
 
   "Resources": {
@@ -130,7 +105,7 @@
         }]
       }
     },
-    "WAFWebACL": {
+	"WAFWebACL": {
       "Type": "AWS::WAFRegional::WebACL",
       "DependsOn": ["WAFManualBlockRule", "WAFAutoBlockRule", "WAFAutoCountRule"],
       "Properties": {
@@ -166,13 +141,12 @@
         }]
       }
     },
-	
 	"SnsTopic": {
             "Type": "AWS::SNS::Topic",
             "Properties": {
                 "Subscription": [
                     {
-                        "Endpoint": "korupalli87122@gmail.com",
+                        "Endpoint": "XXXXXXX.com",
                         "Protocol": "email"
                     }
                 ],
@@ -197,178 +171,11 @@
 			"Threshold": "2.0",
 			"Unit": "Count"
 		}
-	},
-	
-    "LambdaRole": {
-      "Type": "AWS::IAM::Role",
-      "Properties": {
-        "AssumeRolePolicyDocument": {
-          "Version": "2012-10-17",
-          "Statement": [{
-            "Effect": "Allow",
-            "Principal": {
-              "Service": ["lambda.amazonaws.com"]
-            },
-            "Action": ["sts:AssumeRole"]
-          }]
-        },
-        "Path": "/",
-        "Policies": [{
-          "PolicyName": "S3Access",
-          "PolicyDocument": {
-            "Version": "2012-10-17",
-            "Statement": [{
-              "Effect": "Allow",
-              "Action": "s3:*",
-              "Resource": "*"
-            }]
-          }
-        }, {
-          "PolicyName": "WAFAccess",
-          "PolicyDocument": {
-            "Version": "2012-10-17",
-            "Statement": [{
-              "Effect": "Allow",
-            "Action": [
-                "waf-regional:UpdateIPSet",
-                "waf-regional:GetIPSet"
-            ],
-            "Resource": "arn:aws:waf-regional:*:*:ipset/*"
-            }]
-          }
-        }, {
-          "PolicyName": "LogsAccess",
-          "PolicyDocument": {
-            "Version": "2012-10-17",
-            "Statement": [{
-              "Effect": "Allow",
-              "Action": "logs:*",
-              "Resource": "*"
-            }]
-          }
-        }, {
-          "PolicyName": "LambdAccess",
-          "PolicyDocument": {
-            "Version": "2012-10-17",
-            "Statement": [{
-              "Effect": "Allow",
-              "Action": "lambda:*",
-              "Resource": "*"
-            }]
-          }
-        }, {
-          "PolicyName": "CloudFormationAccess",
-          "PolicyDocument": {
-            "Version": "2012-10-17",
-            "Statement": [{
-              "Effect": "Allow",
-              "Action": "cloudformation:DescribeStacks",
-              "Resource": "*"
-            }]
-          }
-        }, {
-          "PolicyName": "SNSAccess",
-          "PolicyDocument": {
-            "Version": "2012-10-17",
-            "Statement": [{
-              "Effect": "Allow",
-            "Action": [
-                "SNS:Publish"
-            ],
-            "Resource": "arn:aws:sns:us-east-1:544820149332:IN-API-01-IPBlocked"
-            }]
-          }
-        }, {
-          "PolicyName": "CloudWatchAccess",
-          "PolicyDocument": {
-            "Version": "2012-10-17",
-            "Statement": [{
-              "Effect": "Allow",
-              "Action": "cloudwatch:PutMetricData",
-              "Resource": "*"
-            }]
-          }
-        }]
-      }
-    },
-    "INAPI01Lambda": {
-      "Type": "AWS::Lambda::Function",
-      "DependsOn": "LambdaRole",
-      "Properties": {
-        "Description": {
-          "Fn::Join": [":", [{
-            "Ref": "RequestThreshold"
-          }, {
-            "Ref": "WAFBlockPeriod"
-          }, {
-            "Ref": "WAFQuarantinePeriod"
-          }]]
-        },
-        "Handler": "parser.lambda_handler",
-        "Role": {
-          "Fn::GetAtt": ["LambdaRole", "Arn"]
-        },
-        "Code": {
-          "S3Bucket": "testbuckforall",
-          "S3Key": "waf-reactive-blacklist/parser.zip"
-        },
-        "Runtime": "python2.7",
-        "MemorySize": "512",
-        "Timeout": "60"
-      }
-    },
-    "LambdaInvokePermission": {
-      "Type": "AWS::Lambda::Permission",
-      "DependsOn": "INAPI01Lambda",
-      "Properties": {
-        "FunctionName": {
-          "Fn::GetAtt": ["INAPI01Lambda", "Arn"]
-        },
-        "Action": "lambda:*",
-        "Principal": "s3.amazonaws.com",
-        "SourceAccount": {
-          "Ref": "AWS::AccountId"
-        }
-      }
-    },
-    "S3CloudFrontAccessLogBucket": {
-      "Type": "AWS::S3::Bucket",
-      "Condition" : "CreateBucket",
-      "DependsOn": "INAPI01Lambda",
-      "Properties": {
-        "BucketName": {
-          "Ref": "CloudFrontAccessLogBucket"
-        },
-        "AccessControl": "Private",
-        "NotificationConfiguration": {
-          "LambdaConfigurations": [{
-            "Event": "s3:ObjectCreated:*",
-            "Filter": {
-              "S3Key": {
-                "Rules": [{
-                  "Name": "suffix",
-                  "Value": "gz"
-                }]
-              }
-            },
-            "Function": {
-              "Fn::GetAtt": ["INAPI01Lambda", "Arn"]
-            }
-          }]
-        }
-      },
-      "DeletionPolicy": "Retain"
-    }
+	}
+    
   },
 
   "Outputs": {
-    "CloudFrontAccessLogBucket": {
-      "Description": "CloudFront Access Log Bucket",
-      "Value": {
-        "Ref": "CloudFrontAccessLogBucket"
-      },
-      "Condition" : "CreateBucket"
-    },
     "RequestThreshold": {
       "Description": "Request Threshold",
       "Value": {
