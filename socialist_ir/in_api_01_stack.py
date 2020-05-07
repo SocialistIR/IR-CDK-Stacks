@@ -41,3 +41,10 @@ class InApi01Stack(StackMenu):
             self.config.set(self.name, "input_bucket", answers["input_bucket"])
             self.config.set(self.name, "Stack_Name", answers["Stack_Name"])
             Config.save_config(self.config)
+          
+    def test(self) -> None:
+        print("Automated testing not added")
+        print("2. Wait 2 minutes")
+        print("3. Check IPset to see if it contains your IP address. If it doesn't depoyment has failed")
+        print("4. If it does, wait for the inputted time and see if it gone")
+        print("5. If it has disappeared, deployment was succesful. Otherwise it failed")
