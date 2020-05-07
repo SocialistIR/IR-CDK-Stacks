@@ -7,19 +7,23 @@ from aws_cdk import (
     core
 )
 
-class IrAPI01Stack(core.Stack):
+class InApi01Stack(core.Stack):
 
     def __init__(self, scope: core.Construct, id: str, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
         
-        s3 = _s3.Bucket(self, "testbuckforall")
-        print(s3)
+        bucket = self.node.try_get_context("input_bucket")
+        stack_name = self.node.try_get_context("Stack_Name")
         
-        lambda_dir_path = os.path.join(os.getcwd(), "ir_cdk_stacks", "IN-API-01")
+        s3 = _s3.Bucket(self, id = bucket)
+        
         function = _lambda.Function(self, "lambda_function",
                                     runtime=_lambda.Runtime.PYTHON_2_7, memory_size = 512, #timeout=core.Duration(120),
                                     handler="parser.lambda_handler",
-                                    code=_lambda.Code.asset(lambda_dir_path))
+                                    code=_lambda.Code.asset("./lambda"),
+                                    environment={
+                                            "clf_name": stack_name}
+                                            )
                                     
         function.add_to_role_policy(
                 iam.PolicyStatement(
