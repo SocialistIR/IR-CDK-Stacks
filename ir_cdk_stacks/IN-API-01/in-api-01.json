@@ -7,7 +7,7 @@
         "Label": {
           "default": "Rate-Based Blacklisting Parameters"
         },
-        "Parameters": ["RequestThreshold", "WAFBlockPeriod", "WAFQuarantinePeriod"]
+        "Parameters": ["RequestThreshold", "WAFBlockPeriod", "WAFQuarantinePeriod","NotificationMail"]
       }],
       "ParameterLabels": {
         "RequestThreshold": {
@@ -18,7 +18,10 @@
         },
         "WAFQuarantinePeriod": {
           "default": "WAF Quarantine Period"
-        }
+        },
+		"NotificationMail":{
+		  "default": "Notification Mail"
+		}
       }
     }
   },
@@ -38,6 +41,11 @@
       "Type": "Number",
       "Default": "60",
       "Description": "Enter for how long (in minutes) IP addresses should be kept in quarantine. Default: 1 hour (60 minutes)"
+    },
+	"NotificationMail": {
+      "Type": "String",
+      "Default": "",
+      "Description": "Enter mailid for notications"
     }
   },
 
@@ -146,7 +154,7 @@
             "Properties": {
                 "Subscription": [
                     {
-                        "Endpoint": "XXXXXXX.com",
+                        "Endpoint": {"Ref": "NotificationMail"},
                         "Protocol": "email"
                     }
                 ],
@@ -172,7 +180,7 @@
 			"Unit": "Count"
 		}
 	}
-    
+
   },
 
   "Outputs": {
