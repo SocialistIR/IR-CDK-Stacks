@@ -14,6 +14,7 @@ class AccessClw(CdkMenu):
         super().__init__(name=name, required_variables=required_variables)
 
     def execute(self) -> bool:
+        #creating cloudwatch log group. The unauthorized user should be revoked access.
         clw = boto3.client('logs')
 
         for i in range(3):
