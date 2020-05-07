@@ -5,13 +5,11 @@ import os
 
 iam = boto3.client('iam')
 sns = boto3.client('sns')
-#clwDenyPolicy = 'arn:aws:iam::544820149332:policy/ClWDenyAccess1'
-#clwDenyPolicy2 = 'arn:aws:iam::544820149332:policy/ClWDenyAccess2'
+
 clwDenyPolicyName1 = 'ClWDenyAccess1'
 clwDenyPolicyName2 = 'ClWDenyAccess2'
 clwGroupName = os.environ["white_list_group"]
-#clwGroupName = 'CLWAccess'
-#clwNotificationTopicArn = 'arn:aws:sns:us-east-1:544820149332:CDKCLWAccess'
+
 notificationTopic='CDKCLWAccess'
 http = urllib3.PoolManager()
 
@@ -59,19 +57,13 @@ def sendNotification(message):
         Subject='Access to CloudWatch',
         MessageStructure='string'
     )
-    # print('sending notification')
-    # response = sns.publish(
-    #     TopicArn=clwNotificationTopicArn,
-    #     Message=message,
-    #     Subject='Access to CloudWatch',
-    #     MessageStructure='string'
-    # )
+
 
 
 def sendSlackNotification(message):
     message = "IN-CLW-01 Unauthorised CloudWatch Access:\n" + message
     webhook_url = os.environ["webhook_url"]
-    # webhook_url = "https://hooks.slack.com/services/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"
+
     slack_message = {"channel": "ir-cdk-stacks", "text": message}
     encoded_data = json.dumps(slack_message).encode("utf-8")
     response = http.request(
