@@ -7,7 +7,7 @@ from socialist_ir.utils.validators import (
 from socialist_ir.config import Config
 
 
-class InClt01Stack(StackMenu):
+class InApi01Stack(StackMenu):
     def __init__(
             self,
             name: str = "in-api-01-stack",
