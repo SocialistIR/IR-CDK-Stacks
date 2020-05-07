@@ -5,6 +5,7 @@ import gzip
 import datetime
 import time
 import math
+import os
 
 print('Loading function')
 
@@ -357,7 +358,7 @@ def lambda_handler(event, context):
 
             outputs = {}
             cf = boto3.client('cloudformation')
-            stack_name = 'IR-API-01-Test'
+            stack_name = os.environ["clf_name"]
             print stack_name
             response = cf.describe_stacks(StackName=stack_name)
             for e in response['Stacks'][0]['Outputs']:
