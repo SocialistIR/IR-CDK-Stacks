@@ -29,7 +29,7 @@ LINE_FORMAT = {
     'source_ip' : 4
 }
 
-notificationTopicArn = 'arn:aws:sns:us-east-1:544820149332:IN-API-01-IPBlocked'
+notificationTopicArn = 'arn:aws:sns:us-east-1:544820149332:alarm-action'
 
 def get_outstanding_requesters(bucket_name, key_name):
     print '[get_outstanding_requesters] Start'
@@ -357,16 +357,14 @@ def lambda_handler(event, context):
 
             outputs = {}
             cf = boto3.client('cloudformation')
-            stack_name = context.invoked_function_arn.split(':')[6].rsplit('-', 2)[0]
+            stack_name = 'IR-API-01-Test'
+            print stack_name
             response = cf.describe_stacks(StackName=stack_name)
             for e in response['Stacks'][0]['Outputs']:
                 outputs[e['OutputKey']] = e['OutputValue']
 
             if OUTPUT_BUCKET == None:
-                if 'CloudFrontAccessLogBucket' in outputs.keys():
-                    OUTPUT_BUCKET = outputs['CloudFrontAccessLogBucket']
-                else:
-                    OUTPUT_BUCKET = bucket_name
+                OUTPUT_BUCKET = bucket_name
             if IP_SET_ID_MANUAL_BLOCK == None:
                 IP_SET_ID_MANUAL_BLOCK = outputs['ManualBlockIPSetID']
             if IP_SET_ID_AUTO_BLOCK == None:
