@@ -9,6 +9,7 @@ from ir_cdk_stacks.in_lam_01_stack import InLam01Stack
 from ir_cdk_stacks.ext_01_stack import Ext01Stack
 from ir_cdk_stacks.ext_06_stack import Ext06Stack
 from socialist_ir.config import Config
+from socialist_ir.in_clw_01_stack import InClw01Stack
 
 config = Config.get_config()
 
@@ -24,6 +25,6 @@ InAur02Stack(app, "in-aur-02-stack", env=env_US)
 InLam01Stack(app, "in-lam-01-stack", env=env_US)
 Ext01Stack(app, "ext-01-stack", env=env_US)
 Ext06Stack(app, "ext-06-stack", env=env_US)
-
+InClw01Stack(app, "in-clw-01-stack", env=env_US)
 
 app.synth()

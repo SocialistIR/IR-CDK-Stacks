@@ -1,5 +1,7 @@
 import sys
 from PyInquirer import prompt
+
+from socialist_ir.in_clw_01_stack import InClw01Stack
 from socialist_ir.utils.validators import AwsAccountIdValidator
 from socialist_ir.in_aur_01_stack import InAur01Stack
 from socialist_ir.in_aur_02_stack import InAur02Stack
@@ -138,7 +140,14 @@ class SocialistIr(CdkMenu):
                             ],
                         )
                 elif answers["ir"] == "IN-CLW-01":
-                    pass
+                    stack = InClw01Stack(
+                        name="in-clw-01-stack",
+                        required_variables=[
+                            "notify_email",
+                            "webhook_url",
+                            "white_list_group",
+                        ],
+                    )
                 elif answers["ir"] == "IN-CLT-01":
                     pass
                 elif answers["ir"] == "IN-IAM-01":

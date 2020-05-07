@@ -1,6 +1,7 @@
 import json
 import boto3
 import urllib3
+import os
 
 iam = boto3.client('iam')
 sns = boto3.client('sns')
@@ -8,6 +9,7 @@ clwDenyPolicy = 'arn:aws:iam::544820149332:policy/ClWDenyAccess1'
 clwDenyPolicy2 = 'arn:aws:iam::544820149332:policy/ClWDenyAccess2'
 clwDenyPolicyName1 = 'ClWDenyAccess1'
 clwDenyPolicyName2 = 'ClWDenyAccess2'
+#clwGroupName = os.environ["white_list_group"]
 clwGroupName = 'CLWAccess'
 clwNotificationTopicArn = 'arn:aws:sns:us-east-1:544820149332:CDKCLWAccess'
 
