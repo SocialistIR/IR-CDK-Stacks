@@ -9,13 +9,12 @@ from ir_cdk_stacks.in_lam_01_stack import InLam01Stack
 from ir_cdk_stacks.ext_01_stack import Ext01Stack
 from ir_cdk_stacks.ext_06_stack import Ext06Stack
 from ir_cdk_stacks.in_clt_01_stack import InClt01Stack
-
+from ir_cdk_stacks.in_clw_01_stack import InClw01Stack
 from ir_cdk_stacks.In_S3_01_Prod_Stack import InS301StackProd
 from ir_cdk_stacks.In_S3_01_Preprod_Stack import InS301PreprodStack
 from ir_cdk_stacks.In_S3_01_Dev_Stack import InS301DevStack
 
 from socialist_ir.config import Config
-from socialist_ir.in_clw_01_stack import InClw01Stack
 
 config = Config.get_config()
 
@@ -33,8 +32,8 @@ InLam01Stack(app, "in-lam-01-stack", env=env_US)
 Ext01Stack(app, "ext-01-stack", env=env_US)
 Ext06Stack(app, "ext-06-stack", env=env_US)
 
-InClw01Stack(app, "in-clw-01-stack", env=env_US)
 
+InClw01Stack(app, "in-clw-01-stack", env=env_US)
 InClt01Stack(app, "in-clt-01-stack", env=env_US)
 
 InS301StackProd(app, "in-s3-01-prod-stack", env=env_US)

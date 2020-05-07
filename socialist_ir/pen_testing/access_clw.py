@@ -16,10 +16,10 @@ class AccessClw(CdkMenu):
     def execute(self) -> bool:
         clw = boto3.client('logs')
 
-        while True:
+        for i in range(3):
             try:
                 response = clw.create_log_group(
-                    logGroupName='testingclw'
+                    logGroupName='/testingclw/test'
                 )
 
                 #print('EventId of some activity: ' + str(response['Events'][0]['EventId']))

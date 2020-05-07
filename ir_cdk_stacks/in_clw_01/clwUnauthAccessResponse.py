@@ -5,14 +5,14 @@ import os
 
 iam = boto3.client('iam')
 sns = boto3.client('sns')
-clwDenyPolicy = 'arn:aws:iam::544820149332:policy/ClWDenyAccess1'
-clwDenyPolicy2 = 'arn:aws:iam::544820149332:policy/ClWDenyAccess2'
+#clwDenyPolicy = 'arn:aws:iam::544820149332:policy/ClWDenyAccess1'
+#clwDenyPolicy2 = 'arn:aws:iam::544820149332:policy/ClWDenyAccess2'
 clwDenyPolicyName1 = 'ClWDenyAccess1'
 clwDenyPolicyName2 = 'ClWDenyAccess2'
-#clwGroupName = os.environ["white_list_group"]
-clwGroupName = 'CLWAccess'
-clwNotificationTopicArn = 'arn:aws:sns:us-east-1:544820149332:CDKCLWAccess'
-
+clwGroupName = os.environ["white_list_group"]
+#clwGroupName = 'CLWAccess'
+#clwNotificationTopicArn = 'arn:aws:sns:us-east-1:544820149332:CDKCLWAccess'
+notificationTopic='CDKCLWAccess'
 http = urllib3.PoolManager()
 
 
@@ -24,7 +24,6 @@ def hasValidGroup(userName):
     for user in response['Users']:
         groupUsernames.append(user['UserName'])
 
-    # groupUsernames.remove('Karan')
 
     if userName in groupUsernames:
         return True
@@ -48,18 +47,31 @@ def hasDenyPolicy(userName):
 
 def sendNotification(message):
     print('sending notification')
+
+    all_sns_topics = sns.list_topics()
+    for topic in all_sns_topics['Topics']:
+        if notificationTopic in topic['TopicArn']:
+            notificationTopicArn = topic['TopicArn']
+
     response = sns.publish(
-        TopicArn=clwNotificationTopicArn,
+        TopicArn=notificationTopicArn,
         Message=message,
         Subject='Access to CloudWatch',
         MessageStructure='string'
     )
+    # print('sending notification')
+    # response = sns.publish(
+    #     TopicArn=clwNotificationTopicArn,
+    #     Message=message,
+    #     Subject='Access to CloudWatch',
+    #     MessageStructure='string'
+    # )
 
 
 def sendSlackNotification(message):
     message = "IN-CLW-01 Unauthorised CloudWatch Access:\n" + message
-    # webhook_url = os.environ["webhook_url"]
-    webhook_url = "https://hooks.slack.com/services/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"
+    webhook_url = os.environ["webhook_url"]
+    # webhook_url = "https://hooks.slack.com/services/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"
     slack_message = {"channel": "ir-cdk-stacks", "text": message}
     encoded_data = json.dumps(slack_message).encode("utf-8")
     response = http.request(
@@ -89,8 +101,15 @@ def lambda_handler(event, context):
     else:
         if userType == "IAMUser" and not validUser:
 
-            response = iam.attach_user_policy(UserName=userName, PolicyArn=clwDenyPolicy)
-            response = iam.attach_user_policy(UserName=userName, PolicyArn=clwDenyPolicy2)
+            all_policies = iam.list_policies()
+            for _policy in all_policies['Policies']:
+                if _policy['PolicyName'] == clwDenyPolicyName1:
+                    policyArn1 = _policy['Arn']
+                if _policy['PolicyName'] == clwDenyPolicyName2:
+                    policyArn2 = _policy['Arn']
+
+            response = iam.attach_user_policy(UserName=userName, PolicyArn=policyArn1)
+            response = iam.attach_user_policy(UserName=userName, PolicyArn=policyArn2)
 
             message = message + ' CloudWatchDeny Policy attached to deny access to CloudWatch.'
             sendNotification(message)
@@ -99,6 +118,8 @@ def lambda_handler(event, context):
 
             message = message + ' Access Granted : CloudWatch Access allowed.'
             sendNotification(message)
+            sendSlackNotification(message)
+
 
     return {
         'statusCode': 200,
