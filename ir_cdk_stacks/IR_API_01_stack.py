@@ -15,17 +15,11 @@ class InApi01Stack(core.Stack):
         s3 = _s3.Bucket(self, "testbuckforall")
         print(s3)
         
-        cf = boto3.client('cloudformation')
-        response = cf.describe_stacks(StackName='IR-API-01-Test')
-        
-        Outputs = {}
-        for e in response['Stacks'][0]['Outputs']:
-                Outputs[e['OutputKey']] = e['OutputValue']
-        print(Outputs)
+        lambda_dir_path = os.path.join(os.getcwd(), "ir_cdk_stacks", "IN-API-01")
         function = _lambda.Function(self, "lambda_function",
                                     runtime=_lambda.Runtime.PYTHON_2_7, memory_size = 512, #timeout=core.Duration(120),
                                     handler="parser.lambda_handler",
-                                    code=_lambda.Code.asset("./lambda"))
+                                    code=_lambda.Code.asset(lambda_dir_path))
                                     
         function.add_to_role_policy(
                 iam.PolicyStatement(
