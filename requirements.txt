@@ -83,7 +83,7 @@ pprint==0.1
 prompt-toolkit==1.0.14
 psycopg2-binary==2.8.5
 publication==0.0.3
-py==1.8.1
+py==1.10.0
 pycodestyle==2.5.0
 pyflakes==2.1.1
 Pygments==2.6.1
