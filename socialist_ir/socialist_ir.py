@@ -9,6 +9,7 @@ from socialist_ir.in_lam_01_stack import InLam01Stack
 from socialist_ir.ext_01_stack import Ext01Stack
 from socialist_ir.ext_06_stack import Ext06Stack
 from socialist_ir.in_clt_01_stack import InClt01Stack
+from socialist_ir.in_api_01_stack import InApi01Stack
 from socialist_ir.in_s3_01_stack_prod import InS301StackProd
 from socialist_ir.in_s3_01_stack_preprod import InS301StackPreprod
 from socialist_ir.in_s3_01_stack_dev import InS301StackDev
@@ -150,7 +151,13 @@ class SocialistIr(CdkMenu):
                 elif answers["ir"] == "IN-AUR-03":
                     pass
                 elif answers["ir"] == "IN-API-01":
-                    pass
+                    stack = InApi01Stack(
+                            name="in-api-01-stack",
+                            required_variables=[
+                                "input_bucket",
+                                "Stack_Name"
+                            ],
+                        )
                 elif answers["ir"] == "IN-API-02":
                     pass
                 elif answers["ir"] == "IN-LAM-01":

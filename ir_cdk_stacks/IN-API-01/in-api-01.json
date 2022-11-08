@@ -1,0 +1,224 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Stack for IR_API_01",
+  "Metadata": {
+    "AWS::CloudFormation::Interface": {
+      "ParameterGroups": [{
+        "Label": {
+          "default": "Rate-Based Blacklisting Parameters"
+        },
+        "Parameters": ["RequestThreshold", "WAFBlockPeriod", "WAFQuarantinePeriod","NotificationMail"]
+      }],
+      "ParameterLabels": {
+        "RequestThreshold": {
+          "default": "Request Threshold"
+        },
+        "WAFBlockPeriod": {
+          "default": "WAF Block Period"
+        },
+        "WAFQuarantinePeriod": {
+          "default": "WAF Quarantine Period"
+        },
+		"NotificationMail":{
+		  "default": "Notification Mail"
+		}
+      }
+    }
+  },
+
+  "Parameters": {
+    "RequestThreshold": {
+      "Type": "Number",
+      "Default": "400",
+      "Description": "Enter the maximum acceptable request per second per IP address. Default: 400 requests per minute"
+    },
+    "WAFBlockPeriod": {
+      "Type": "Number",
+      "Default": "60",
+      "Description": "Enter for how long (in minutes) IP addresses should be blocked. Default: 1 hour (60 minutes)"
+    },
+    "WAFQuarantinePeriod": {
+      "Type": "Number",
+      "Default": "60",
+      "Description": "Enter for how long (in minutes) IP addresses should be kept in quarantine. Default: 1 hour (60 minutes)"
+    },
+	"NotificationMail": {
+      "Type": "String",
+      "Default": "",
+      "Description": "Enter mailid for notications"
+    }
+  },
+
+  "Resources": {
+    "WAFManualBlockSet": {
+      "Type": "AWS::WAFRegional::IPSet",
+      "Properties": {
+        "Name": "Manual Block Set"
+      }
+    },
+    "WAFAutoBlockSet": {
+      "Type": "AWS::WAFRegional::IPSet",
+      "Properties": {
+        "Name": "Auto Block Set"
+      }
+    },
+    "WAFAutoCountSet": {
+      "Type": "AWS::WAFRegional::IPSet",
+      "Properties": {
+        "Name": "Auto Count Set"
+      }
+    },
+    "WAFManualBlockRule": {
+      "Type": "AWS::WAFRegional::Rule",
+      "DependsOn": "WAFManualBlockSet",
+      "Properties": {
+        "Name": "Manual Block Rule",
+        "MetricName": "ManualBlockRule",
+        "Predicates": [{
+          "DataId": {
+            "Ref": "WAFManualBlockSet"
+          },
+          "Negated": false,
+          "Type": "IPMatch"
+        }]
+      }
+    },
+    "WAFAutoBlockRule": {
+      "Type": "AWS::WAFRegional::Rule",
+      "DependsOn": "WAFAutoBlockSet",
+      "Properties": {
+        "Name": "Auto Block Rule",
+        "MetricName": "AutoBlockRule",
+        "Predicates": [{
+          "DataId": {
+            "Ref": "WAFAutoBlockSet"
+          },
+          "Negated": false,
+          "Type": "IPMatch"
+        }]
+      }
+    },
+    "WAFAutoCountRule": {
+      "Type": "AWS::WAFRegional::Rule",
+      "DependsOn": "WAFAutoCountSet",
+      "Properties": {
+        "Name": "Auto Count Rule",
+        "MetricName": "AutoCountRule",
+        "Predicates": [{
+          "DataId": {
+            "Ref": "WAFAutoCountSet"
+          },
+          "Negated": false,
+          "Type": "IPMatch"
+        }]
+      }
+    },
+	"WAFWebACL": {
+      "Type": "AWS::WAFRegional::WebACL",
+      "DependsOn": ["WAFManualBlockRule", "WAFAutoBlockRule", "WAFAutoCountRule"],
+      "Properties": {
+        "Name": "IN-API-01_WACL",
+        "DefaultAction": {
+          "Type": "ALLOW"
+        },
+        "MetricName": "IN-API-01",
+        "Rules": [{
+          "Action": {
+            "Type": "BLOCK"
+          },
+          "Priority": 1,
+          "RuleId": {
+            "Ref": "WAFManualBlockRule"
+          }
+        }, {
+          "Action": {
+            "Type": "BLOCK"
+          },
+          "Priority": 2,
+          "RuleId": {
+            "Ref": "WAFAutoBlockRule"
+          }
+        }, {
+          "Action": {
+            "Type": "COUNT"
+          },
+          "Priority": 3,
+          "RuleId": {
+            "Ref": "WAFAutoCountRule"
+          }
+        }]
+      }
+    },
+	"SnsTopic": {
+            "Type": "AWS::SNS::Topic",
+            "Properties": {
+                "Subscription": [
+                    {
+                        "Endpoint": {"Ref": "NotificationMail"},
+                        "Protocol": "email"
+                    }
+                ],
+                "TopicName": "IN-API-01-IPBlocked"
+            }
+    },
+	"CloudWatchAlarm": {
+		"Type": "AWS::CloudWatch::Alarm",
+		"Properties": {
+			"AlarmName": "Test1",
+			"ComparisonOperator": "GreaterThanThreshold",
+			"EvaluationPeriods": 10,
+			"MetricName": "IPBlocked",
+			"Namespace": "IN-API-01-api-flood-logs",
+			"Period": 10,
+			"AlarmActions": [
+				{
+					"Ref": "SnsTopic"
+				}
+			],
+			"Statistic": "Sum",
+			"Threshold": "2.0",
+			"Unit": "Count"
+		}
+	}
+
+  },
+
+  "Outputs": {
+    "RequestThreshold": {
+      "Description": "Request Threshold",
+      "Value": {
+        "Ref": "RequestThreshold"
+      }
+    },
+    "WAFBlockPeriod": {
+      "Description": "WAF Block Period",
+      "Value": {
+        "Ref": "WAFBlockPeriod"
+      }
+    },
+    "WAFQuarantinePeriod": {
+      "Description": "WAF Quarantine Period",
+      "Value": {
+        "Ref": "WAFQuarantinePeriod"
+      }
+    },
+    "ManualBlockIPSetID": {
+      "Description": "Manual Block IP Set ID",
+      "Value": {
+        "Ref": "WAFManualBlockSet"
+      }
+    },
+    "AutoBlockIPSetID": {
+      "Description": "Auto Block IP Set ID",
+      "Value": {
+        "Ref": "WAFAutoBlockSet"
+      }
+    },
+    "AutoCountIPSetID": {
+      "Description": "Auto Count IP Set ID",
+      "Value": {
+        "Ref": "WAFAutoCountSet"
+      }
+    }
+  }
+}
